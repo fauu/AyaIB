@@ -1,0 +1,6 @@
+.gradient (@startColor: #eee, @endColor: white, @stop: 100px) {
+  background-color: @startColor;
+  background: -webkit-linear-gradient(top, @startColor 0%, @endColor @stop);
+  background: -moz-linear-gradient(top, @startColor 0%, @endColor @stop);
+  background: linear-gradient(top, @startColor 0%, @endColor @stop);
+}

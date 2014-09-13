@@ -1,0 +1,13 @@
+@(boards: List[entities.Board])
+
+@main("Index") {
+
+  <div id="board-list-container">
+    <ul id="board-list">
+      @for(b <- boards) {
+        <li><a href="@routes.BoardController.show(b.name)">@b.slashizedName - @b.fullName</a></li>
+      }
+    </ul>
+  </div>
+
+}
