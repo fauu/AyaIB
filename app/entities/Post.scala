@@ -4,7 +4,7 @@ import reactivemongo.bson.BSONObjectID
 import reactivemongo.bson
 
 case class Post (
-  _id: Option[BSONObjectID],
+  _id: Option[BSONObjectID] = None,
   no: Int,
   content: String
 ) extends MongoEntity

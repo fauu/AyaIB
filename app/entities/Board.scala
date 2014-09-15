@@ -4,9 +4,10 @@ import reactivemongo.bson.BSONObjectID
 import reactivemongo.bson
 
 case class Board (
-  _id: Option[BSONObjectID],
+  _id: Option[BSONObjectID] = None,
   name: String,
   fullName: String,
+  lastPostNo: Int,
   threads: Option[List[Thread]]
 ) extends MongoEntity {
 

@@ -1,5 +1,14 @@
-@(board: entities.Board)
+@(board: entities.Board, postForm: Form[forms.PostForm])
+
+@import helper._
 
 @main(board.slashizedName + " - " + board.fullName) {
+
+  <aside id="post-form-container">
+    @form(action = routes.BoardController.createThread(board.name)) {
+      @textarea(postForm("content"), '_showConstraints -> false, 'placeholder -> "Message")
+      <button type="submit">Create thread</button>
+    }
+  </aside>
 
 }

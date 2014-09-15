@@ -4,3 +4,26 @@
 
 @import "views/main";
 @import "views/index";
+
+#post-form-container {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 350px;
+  padding: 10px 35px 10px 10px;
+  background-color: @text-bg;
+
+  > form {
+    text-align: right;
+
+    dt {
+      display: none;
+    }
+
+    textarea {
+      width: 99%;
+      height: 120px;
+      padding: 5px;
+    }
+  }
+}

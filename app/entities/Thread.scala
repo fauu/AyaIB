@@ -2,10 +2,9 @@ package entities
 
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.bson
-import entities.Post
 
 case class Thread (
-  _id: Option[BSONObjectID],
+  _id: Option[BSONObjectID] = None,
   op: Post,
   replies: List[Post]
 ) extends MongoEntity

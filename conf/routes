@@ -6,5 +6,6 @@ GET        /                    controllers.ImageboardController.index
 
 GET        /:name               controllers.BoardController.fixUrlAndRedirect(name: String)
 GET        /:name/              controllers.BoardController.show(name: String)
+POST       /:boardName          controllers.BoardController.createThread(boardName: String)
 
 GET        /public/*file        controllers.Assets.at(path="/public", file)

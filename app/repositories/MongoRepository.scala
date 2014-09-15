@@ -21,16 +21,26 @@ trait MongoRepository extends ImplicitBSONHandlers {
   implicit protected val bsonDocumentHandler: BSONDocumentReader[A] with BSONDocumentWriter[A]
                                                                     with BSONHandler[BSONDocument, A]
 
-  def query(document: BSONDocument = BSONDocument(), filter: BSONDocument = BSONDocument()): Future[List[A]]
-    = collection.find(document, filter).cursor[A].collect[List](1000, stopOnError = false)
-  def queryOne(document: BSONDocument = BSONDocument(), filter: BSONDocument = BSONDocument()): Future[Option[A]]
-    = collection.find(document, filter).one[A]
+  def query(selector: BSONDocument = BSONDocument(), filter: BSONDocument = BSONDocument()): Future[List[A]]
+    = collection.find(selector, filter).cursor[A].collect[List](1000, stopOnError = false)
+
+  def queryOne(selector: BSONDocument = BSONDocument(), filter: BSONDocument = BSONDocument()): Future[Option[A]]
+    = collection.find(selector, filter).one[A]
+
   def insert(a: A): Future[LastError] = collection.insert(a, awaitJournalCommit)
-  def update(a: A): Future[LastError]
-    = collection.update(BSONDocument("_id" -> a._id), a, awaitJournalCommit, upsert = false)
+
+  def update(selector: BSONDocument, modifier: BSONDocument): Future[LastError]
+    = collection.update(selector, modifier, awaitJournalCommit, upsert = false)
+
+  def upsert(selector: BSONDocument, modifier: BSONDocument): Future[LastError]
+    = collection.update(selector, modifier, awaitJournalCommit, upsert = true)
+
   def findOne(id: BSONObjectID): Future[Option[A]] = collection.find(BSONDocument("_id" -> id)).one[A]
+
   def findAll: Future[List[A]] = query()
+
   def exists(id: BSONObjectID): Future[Boolean] = findOne(id).map(_.isDefined)
+
   def remove(id: BSONObjectID) = collection.remove(BSONDocument("_id" -> id))
 
 }
