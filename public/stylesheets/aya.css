@@ -119,11 +119,11 @@ body {
   background: linear-gradient(top, #aed0d1 0%, #e0eff1 200px);
 }
 a {
-  color: #ff7f00;
+  color: #ffaf00;
   text-decoration: none;
 }
 a:hover {
-  color: #ff9933;
+  color: #ffbf33;
 }
 #board-list-container {
   text-align: center;
@@ -138,5 +138,33 @@ a:hover {
 }
 #board-list > li {
   font-size: 18px;
+  font-weight: bold;
+}
+#post-form-container {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 350px;
+  padding: 10px 23px 10px 10px;
+  background-color: #ffffff;
+  border-top-left-radius: 5px;
+}
+#post-form-container > form {
+  text-align: right;
+}
+#post-form-container > form dt {
+  display: none;
+}
+#post-form-container > form input {
+  width: 100%;
+}
+#post-form-container > form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  height: 120px;
+  padding: 5px;
+}
+#post-form-container > form button {
+  padding: 5px 3px;
   font-weight: bold;
 }

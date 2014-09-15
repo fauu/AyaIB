@@ -5,8 +5,9 @@
 @main(board.slashizedName + " - " + board.fullName) {
 
   <aside id="post-form-container">
-    @form(action = routes.BoardController.createThread(board.name)) {
+    @form(action = routes.BoardController.createThread(board.name), 'enctype -> "multipart/form-data") {
       @textarea(postForm("content"), '_showConstraints -> false, 'placeholder -> "Message")
+      @inputFile(postForm("file"))
       <button type="submit">Create thread</button>
     }
   </aside>

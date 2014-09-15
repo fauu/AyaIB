@@ -1,12 +1,13 @@
 package controllers
 
-import play.api.mvc.{Action, Controller}
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
+
 import ExecutionContext.Implicits.global
-import entities.{Post, Board, Thread}
 import context.Context
+import entities.{FileMetadata, Post, Thread}
 import forms.PostForm
-import play.api.data.Form
+import play.api.mvc.{Action, Controller}
+import reactivemongo.api.gridfs.DefaultFileToSave
 
 object BoardController extends Controller {
 
@@ -23,23 +24,30 @@ object BoardController extends Controller {
     }
   }
 
-  def createThread(boardName: String) = Action.async { implicit request =>
-    PostForm.get.bindFromRequest.fold(
-      formWithErrors => { Future(BadRequest) },
-      postData => {
+  // TODO: Handle errors
+  def createThread(boardName: String) = Action.async(parse.multipartFormData) { implicit request =>
+    val postData: Option[PostForm] = PostForm.get.bindFromRequest.fold(
+      formWithErrors => None,
+      postData => Some(postData)
+    )
+
+    request.body.file("file") map { file =>
+      postData map { postData =>
         boardService.findBoardLastPostNo(boardName) map {
-          // TODO: Handle errors
           case Some(no) =>
             boardService.addThread(
               boardName,
               Thread(op = Post(no = no + 1, content = postData.content),
-                     replies = List[Post]())
+                replies = List[Post]()),
+              file.ref.file,
+              file.filename,
+              file.contentType
             )
             Redirect(routes.BoardController.show(boardName))
           case _ => InternalServerError
         }
-      }
-    )
+      } getOrElse Future(BadRequest("Form binding error."))
+    } getOrElse Future(BadRequest("No file."))
   }
 
 }

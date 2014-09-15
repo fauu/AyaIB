@@ -1,6 +1,6 @@
 @import "global/reset";
 @import "global/mixins";
-@import "global/colors";
+@import "global/variables";
 
 @import "views/main";
 @import "views/index";
@@ -10,8 +10,9 @@
   right: 0;
   bottom: 0;
   width: 350px;
-  padding: 10px 35px 10px 10px;
+  padding: @default-padding 23px @default-padding @default-padding;
   background-color: @text-bg;
+  border-top-left-radius: @default-border-radius;
 
   > form {
     text-align: right;
@@ -20,10 +21,20 @@
       display: none;
     }
 
+    input {
+      width: 100%;
+    }
+
     textarea {
-      width: 99%;
+      width: 100%;
+      box-sizing: border-box;
       height: 120px;
       padding: 5px;
+    }
+
+    button {
+      padding: 5px 3px;
+      font-weight: bold;
     }
   }
 }

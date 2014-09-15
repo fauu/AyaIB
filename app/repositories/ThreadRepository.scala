@@ -1,9 +1,8 @@
 package repositories
 
-import entities.{Board, Thread}
+import entities.Thread
 import scala.concurrent.Future
-import reactivemongo.bson.{Producer, BSONNull, Macros, BSONDocument}
-import reactivemongo.bson
+import reactivemongo.bson.BSONDocument
 import reactivemongo.core.commands.LastError
 
 trait ThreadRepositoryComponent {
