@@ -6,10 +6,11 @@ import ExecutionContext.Implicits.global
 import context.Context
 import entities.{FileMetadata, Post, Thread}
 import forms.PostForm
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{Results, Action, Controller}
 import reactivemongo.api.gridfs.DefaultFileToSave
 import wrappers.FileWrapper
 import reactivemongo.bson.BSONObjectID
+import scala.util.Success
 
 object BoardController extends Controller {
 
@@ -26,28 +27,21 @@ object BoardController extends Controller {
     }
   }
 
-  // TODO: Handle errors
   def createThread(boardName: String) = Action.async(parse.multipartFormData) { implicit request =>
-    val postData: Option[PostForm] = PostForm.get.bindFromRequest.fold(
+    val postData = PostForm.get.bindFromRequest.fold(
       formWithErrors => None,
       postData => Some(postData)
     )
 
     request.body.file("file") map { file =>
       postData map { postData =>
-        boardService.findBoardLastPostNo(boardName) map {
-          case Some(no) => try {
-              boardService.addThread(
-                boardName,
-                Thread(_id = Some(BSONObjectID.generate),
-                       op = Post(no = no + 1, content = postData.content),
-                       replies = List[Post]()),
-                new FileWrapper(file = file.ref.file, file.filename, file.contentType)
-              )
-            } catch {
-              case e: Exception => InternalServerError
-            }
-            Redirect(routes.BoardController.show(boardName))
+        val futureNewThreadNoOption
+            = boardService.addThread(boardName,
+                                     opPostData = postData,
+                                     new FileWrapper(file.ref.file, file.filename, file.contentType))
+
+        futureNewThreadNoOption map {
+          case Some(newThreadNo) => Redirect(routes.BoardController.show(boardName))
           case _ => InternalServerError
         }
       } getOrElse Future(BadRequest("Form binding error"))

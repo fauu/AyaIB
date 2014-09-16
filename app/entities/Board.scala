@@ -8,14 +8,13 @@ case class Board (
   name: String,
   fullName: String,
   lastPostNo: Int = 0,
+  config: BoardConfig,
   threads: Option[List[Thread]]
 ) extends MongoEntity {
 
   def slashizedName = "/" + name + "/"
 
 }
-
-
 
 object Board {
 

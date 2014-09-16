@@ -21,6 +21,7 @@ trait FileRepositoryComponent {
     type A = FileMetadata
 
     def save(file: File, fileToSave: FileToSave[BSONValue]): Future[ReadFile[BSONValue]]
+    def saveThumbnail(file: File, fileToSave: FileToSave[BSONValue]): Future[ReadFile[BSONValue]]
   }
 
 }
@@ -30,13 +31,17 @@ trait FileRepositoryComponentImpl extends FileRepositoryComponent {
   override val fileRepository = new FileRepositoryImpl
 
   class FileRepositoryImpl extends FileRepository {
-    protected val collectionName = "fs.files"
+    protected val collectionName = ""
     protected val bsonDocumentHandler = FileMetadata.fileMetadataBSONHandler
 
-    val gridFS = new GridFS(db)
+    val gridFSMain = new GridFS(db, prefix = "main")
+    val gridFSThumbnail = new GridFS(db, prefix = "thumb")
 
     def save(file: File, fileToSave: FileToSave[BSONValue])
-      = gridFS.save(Enumerator(Files.readBytes(file = file, limit = 1024 * 1024 * 15)), fileToSave)
+      = gridFSMain.save(Enumerator(Files.readBytes(file, limit = 1024 * 1024 * 15)), fileToSave)
+
+    def saveThumbnail(file: File, fileToSave: FileToSave[BSONValue])
+      = gridFSThumbnail.save(Enumerator(Files.readBytes(file, limit = 1024 * 1024 * 15)), fileToSave)
   }
 
 }
