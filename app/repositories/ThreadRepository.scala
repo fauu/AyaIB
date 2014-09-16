@@ -2,7 +2,7 @@ package repositories
 
 import entities.Thread
 import scala.concurrent.Future
-import reactivemongo.bson.BSONDocument
+import reactivemongo.bson.{BSONValue, BSONObjectID, BSONDocument}
 import reactivemongo.core.commands.LastError
 
 trait ThreadRepositoryComponent {
@@ -13,6 +13,7 @@ trait ThreadRepositoryComponent {
     type A = Thread
 
     def add(boardName: String, thread: Thread): Future[LastError]
+    def setOpFileRef(boardName: String, threadId: Option[BSONObjectID], fileId: BSONValue): Future[LastError]
   }
 
 }
@@ -26,8 +27,12 @@ trait ThreadRepositoryComponentImpl extends ThreadRepositoryComponent {
     protected val bsonDocumentHandler = Thread.threadBSONHandler
 
     def add(boardName: String, thread: Thread): Future[LastError]
-      = upsert(BSONDocument("name" -> boardName),
+      = update(BSONDocument("name" -> boardName),
                BSONDocument("$push" -> BSONDocument("threads" -> thread)))
+
+    def setOpFileRef(boardName: String, threadId: Option[BSONObjectID], fileId: BSONValue)
+      = update(BSONDocument("name" -> boardName, "threads._id" -> threadId.get),
+               BSONDocument("$set" -> BSONDocument("threads.$.op.fileRef" -> fileId)))
   }
 
 }

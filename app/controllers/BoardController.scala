@@ -8,6 +8,8 @@ import entities.{FileMetadata, Post, Thread}
 import forms.PostForm
 import play.api.mvc.{Action, Controller}
 import reactivemongo.api.gridfs.DefaultFileToSave
+import wrappers.FileWrapper
+import reactivemongo.bson.BSONObjectID
 
 object BoardController extends Controller {
 
@@ -34,20 +36,22 @@ object BoardController extends Controller {
     request.body.file("file") map { file =>
       postData map { postData =>
         boardService.findBoardLastPostNo(boardName) map {
-          case Some(no) =>
-            boardService.addThread(
-              boardName,
-              Thread(op = Post(no = no + 1, content = postData.content),
-                replies = List[Post]()),
-              file.ref.file,
-              file.filename,
-              file.contentType
-            )
+          case Some(no) => try {
+              boardService.addThread(
+                boardName,
+                Thread(_id = Some(BSONObjectID.generate),
+                       op = Post(no = no + 1, content = postData.content),
+                       replies = List[Post]()),
+                new FileWrapper(file = file.ref.file, file.filename, file.contentType)
+              )
+            } catch {
+              case e: Exception => InternalServerError
+            }
             Redirect(routes.BoardController.show(boardName))
           case _ => InternalServerError
         }
-      } getOrElse Future(BadRequest("Form binding error."))
-    } getOrElse Future(BadRequest("No file."))
+      } getOrElse Future(BadRequest("Form binding error"))
+    } getOrElse Future(BadRequest("No file"))
   }
 
 }

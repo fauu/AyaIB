@@ -4,7 +4,7 @@ import reactivemongo.bson.BSONObjectID
 import reactivemongo.bson
 
 case class Thread (
-  _id: Option[BSONObjectID] = None,
+  _id: Option[BSONObjectID] = Some(BSONObjectID.generate),
   op: Post,
   replies: List[Post]
 ) extends MongoEntity

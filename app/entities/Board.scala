@@ -7,7 +7,7 @@ case class Board (
   _id: Option[BSONObjectID] = None,
   name: String,
   fullName: String,
-  lastPostNo: Int,
+  lastPostNo: Int = 0,
   threads: Option[List[Thread]]
 ) extends MongoEntity {
 

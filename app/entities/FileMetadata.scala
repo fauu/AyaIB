@@ -4,7 +4,7 @@ import reactivemongo.bson
 import reactivemongo.bson.BSONObjectID
 
 case class FileMetadata (
-  _id: Option[BSONObjectID],
+  _id: Option[BSONObjectID] = None,
   originalName: String,
   dimensions: String
 ) extends MongoEntity { }
