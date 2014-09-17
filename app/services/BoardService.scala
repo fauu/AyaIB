@@ -1,21 +1,18 @@
 package services
 
+import scala.{Option, Some}
 import scala.concurrent.Future
-import repositories.{FileRepositoryComponent, ThreadRepositoryComponent, BoardRepositoryComponent}
+import scala.util.{Failure, Success, Try}
+
 import entities._
-import play.api.libs.concurrent.Execution.Implicits._
-import reactivemongo.core.commands.LastError
-import java.io.File
-import reactivemongo.api.gridfs.{DefaultFileToSave, ReadFile, FileToSave}
-import reactivemongo.bson.{BSONDocument, BSONValue, BSONObjectID}
-import wrappers.FileWrapper
-import scala.Option
-import scala.util.{Failure, Try, Success}
-import forms.PostForm
-import scala.Some
-import reactivemongo.api.gridfs.DefaultFileToSave
 import exceptions._
-import reactivemongo.core.errors.DatabaseException
+import forms.PostForm
+import play.api.libs.concurrent.Execution.Implicits._
+import reactivemongo.api.gridfs.DefaultFileToSave
+import reactivemongo.bson.BSONObjectID
+import repositories.{BoardRepositoryComponent, FileRepositoryComponent, ThreadRepositoryComponent}
+import utils.Utils
+import wrappers.FileWrapper
 
 trait BoardServiceComponent {
 
@@ -43,11 +40,44 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
     def findBoardByName(name: String) = boardRepository.findByName(name)
 
     private def fileValidity(boardConfig: BoardConfig, fileWrapper: FileWrapper): Future[Unit] =
-      if (boardConfig.allowedContentTypes contains fileWrapper.contentType.getOrElse("")) Future.successful()
+      if (boardConfig.allowedContentTypes contains fileWrapper.contentType.getOrElse("")) Future.successful(Unit)
       else Future.failed(new IncorrectInputException("Corrupted file or forbidden file type"))
 
-    private def processFile(fileWrapper: FileWrapper): (FileWrapper, FileWrapper, FileMetadata) = {
-      (fileWrapper, fileWrapper, FileMetadata(originalName = "testOrigName", dimensions = "testOrigDims"))
+    private def processFile(fileWrapper: FileWrapper): Future[(FileWrapper, FileWrapper, FileMetadata)] = {
+      import java.io.File
+      import com.sksamuel.scrimage.{AsyncImage, Format}
+
+      val thumbnailMaxDimension = 250
+
+      fileWrapper.contentType getOrElse "" match {
+        case "image/jpeg" | "image/png" =>
+          AsyncImage(fileWrapper.file) map { image =>
+            val thumbnail = if (image.ratio >= 1) image.copy.scaleToWidth(thumbnailMaxDimension)
+                            else image.copy.scaleToHeight(thumbnailMaxDimension)
+
+            val thumbnailFile = File.createTempFile("tmp", "ayafile")
+
+            // TODO: Stream this
+            thumbnail.writer(Format.JPEG).withCompression(70).write(thumbnailFile)
+
+            val thumbnailWrapper = new FileWrapper(file = thumbnailFile,
+                                                   filename = fileWrapper.filename,
+                                                   contentType = fileWrapper.contentType)
+
+            (fileWrapper,
+             thumbnailWrapper,
+             FileMetadata(originalName = fileWrapper.filename,
+                          dimensions = image.dimensions.productIterator map { _.toString } mkString "x",
+                          size = Utils.humanizeFileLength(fileWrapper.file.length)))
+          }
+        case _ => throw new UnsupportedOperationException("File format not supported")
+      }
+    }
+
+    private def generateFilename(fileWrapper: FileWrapper, timestamp: Long, thumbnail: Boolean = false): String = {
+      val extension = Utils.contentTypeToExtension(fileWrapper.contentType.get).getOrElse("ayafile")
+      val name = if (thumbnail) timestamp.toString + "_thumb" else timestamp.toString
+      name + "." + extension
     }
 
     def addThread(boardName: String, opPostData: PostForm, fileWrapper: FileWrapper) =
@@ -57,13 +87,16 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
         _ <- fileValidity(board.config, fileWrapper)
 
         (mainWrapper: FileWrapper, thumbWrapper: FileWrapper, metadata: FileMetadata)
-          <- Future(processFile(fileWrapper))
+          <- processFile(fileWrapper)
 
         fileMetadata = FileMetadata.fileMetadataBSONHandler write metadata
 
-        thumbFileToSave = DefaultFileToSave(filename = "TestThumbName", contentType = thumbWrapper.contentType)
+        timestamp = System.currentTimeMillis()
 
-        mainFileToSave = DefaultFileToSave(filename = "TestFilename",
+        thumbFileToSave = DefaultFileToSave(filename = generateFilename(fileWrapper, timestamp, thumbnail = true),
+                                            contentType = thumbWrapper.contentType)
+
+        mainFileToSave = DefaultFileToSave(filename = generateFilename(fileWrapper, timestamp),
                                            contentType = fileWrapper.contentType,
                                            metadata = fileMetadata)
 
@@ -86,7 +119,9 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
         Success(newThread.op.no)
       }) recover {
         case (ex: IncorrectInputException) => Failure(ex)
-        case _ => Failure(new PersistenceException("Cannot save thread to the database"))
+        case (ex: Exception) => Failure {
+          new PersistenceException(s"Cannot save thread to the database: $ex")
+        }
       }
 
     def findBoardLastPostNo(name: String) =
