@@ -42,52 +42,52 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
 
     def findBoardByName(name: String) = boardRepository.findByName(name)
 
+    private def fileValidity(boardConfig: BoardConfig, fileWrapper: FileWrapper): Future[Unit] =
+      if (boardConfig.allowedContentTypes contains fileWrapper.contentType.getOrElse("")) Future.successful()
+      else Future.failed(new IncorrectInputException("Corrupted file or forbidden file type"))
+
     private def processFile(fileWrapper: FileWrapper): (FileWrapper, FileWrapper, FileMetadata) = {
       (fileWrapper, fileWrapper, FileMetadata(originalName = "testOrigName", dimensions = "testOrigDims"))
     }
 
-    def addThread(boardName: String, opPostData: PostForm, fileWrapper: FileWrapper) = {
-      boardRepository.findByNameSimple(boardName) map { boardOption =>
-        boardOption map { board =>
-          if (board.config.allowedContentTypes contains fileWrapper.contentType.getOrElse("")) {
-            processFile(fileWrapper) match {
-              case (mainWrapper: FileWrapper, thumbWrapper: FileWrapper, metadata: FileMetadata) =>
-                val fileMetadata = FileMetadata.fileMetadataBSONHandler write metadata
+    def addThread(boardName: String, opPostData: PostForm, fileWrapper: FileWrapper) =
+      (for {
+        Some(board) <- boardRepository.findByNameSimple(boardName)
 
-                val thumbFileToSave = DefaultFileToSave(filename = "TestThumbName",
-                  contentType = thumbWrapper.contentType)
-                val mainFileToSave = DefaultFileToSave(filename = "TestFilename",
-                  contentType = fileWrapper.contentType,
-                  metadata = fileMetadata)
+        _ <- fileValidity(board.config, fileWrapper)
 
-                val futureThumbResult = fileRepository.saveThumbnail(file = thumbWrapper.file,
-                  fileToSave = thumbFileToSave)
-                val futureFileResult = fileRepository.save(file = fileWrapper.file, fileToSave = mainFileToSave)
+        (mainWrapper: FileWrapper, thumbWrapper: FileWrapper, metadata: FileMetadata)
+          <- Future(processFile(fileWrapper))
 
-                futureThumbResult flatMap { thumbResult =>
-                  futureFileResult flatMap { fileResult =>
-                    boardRepository.incrementLastPostNo(boardName) flatMap { lastError =>
-                      findBoardLastPostNo(boardName) map {
-                        case Some(lastPostNo) =>
-                          val newThread = Thread(_id = Some(BSONObjectID.generate),
-                            op = Post(no = lastPostNo, content = opPostData.content),
-                            replies = List[Post]())
+        fileMetadata = FileMetadata.fileMetadataBSONHandler write metadata
 
-                          threadRepository.add(boardName, newThread) flatMap { lastError =>
-                            threadRepository.setOpFileRefs(boardName, newThread._id, fileResult.id, thumbResult.id) map {
-                              lastError => Success(newThread.op.no)
-                            }
-                          }
-                        case _ => Future.successful(Failure(new PersistenceException(s"Cannot retrieve last post number for board $boardName")))
-                      } flatMap (x => x)
-                    }
-                  }
-                } recover { case _ => Failure(new PersistenceException("Cannot save file to the database")) }
-            }
-          } else Future.successful(Failure(new BadInputException("Corrupted file or forbidden file type")))
-        } getOrElse Future.successful(Failure(new PersistenceException(s"Cannot retrieve board data for board $boardName")))
-      } flatMap (x => x)
-    }
+        thumbFileToSave = DefaultFileToSave(filename = "TestThumbName", contentType = thumbWrapper.contentType)
+
+        mainFileToSave = DefaultFileToSave(filename = "TestFilename",
+                                           contentType = fileWrapper.contentType,
+                                           metadata = fileMetadata)
+
+        thumbResult <- fileRepository.saveThumbnail(thumbWrapper.file, thumbFileToSave)
+
+        fileResult <- fileRepository.save(fileWrapper.file, mainFileToSave)
+
+        _ <- boardRepository.incrementLastPostNo(boardName)
+
+        Some(lastPostNo) <- findBoardLastPostNo(boardName)
+
+        newThread = Thread(_id = Some(BSONObjectID.generate),
+                           op = Post(no = lastPostNo, content = opPostData.content),
+                           replies = List[Post]())
+
+        _ <- threadRepository.add(boardName, newThread)
+
+        _ <- threadRepository.setOpFileRefs(boardName, newThread._id, fileResult.id, thumbResult.id)
+      } yield {
+        Success(newThread.op.no)
+      }) recover {
+        case (ex: IncorrectInputException) => Failure(ex)
+        case _ => Failure(new PersistenceException("Cannot save thread to the database"))
+      }
 
     def findBoardLastPostNo(name: String) =
       boardRepository.findByNameSimple(name) map {

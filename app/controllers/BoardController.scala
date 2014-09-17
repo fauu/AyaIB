@@ -11,7 +11,7 @@ import reactivemongo.api.gridfs.DefaultFileToSave
 import wrappers.FileWrapper
 import reactivemongo.bson.BSONObjectID
 import scala.util.{Failure, Success}
-import exceptions.BadInputException
+import exceptions.IncorrectInputException
 import play.api.Logger
 
 object BoardController extends Controller {
@@ -45,7 +45,7 @@ object BoardController extends Controller {
         futureNewThreadNoOption map {
           case Success(newThreadNo) => Redirect(routes.BoardController.show(boardName))
 
-          case Failure(ex: BadInputException)
+          case Failure(ex: IncorrectInputException)
             => Redirect(routes.BoardController.show(boardName)).flashing("error" -> ex.getMessage)
 
           case Failure(ex) => {
@@ -53,8 +53,12 @@ object BoardController extends Controller {
             Redirect(routes.BoardController.show(boardName)).flashing("failure" -> "")
           }
         }
-      } getOrElse Future.successful(BadRequest("Form binding error"))
-    } getOrElse Future.successful(BadRequest("No file"))
+      } getOrElse Future.successful {
+        Redirect(routes.BoardController.show(boardName)).flashing("error" -> "Please fill all required fields")
+      }
+    } getOrElse Future.successful {
+      Redirect(routes.BoardController.show(boardName)).flashing("error" -> "Please pick a file")
+    }
   }
 
 }
