@@ -10,10 +10,12 @@ import reactivemongo.api.gridfs.{DefaultFileToSave, ReadFile, FileToSave}
 import reactivemongo.bson.{BSONDocument, BSONValue, BSONObjectID}
 import wrappers.FileWrapper
 import scala.Option
-import scala.util.Success
+import scala.util.{Failure, Try, Success}
 import forms.PostForm
 import scala.Some
 import reactivemongo.api.gridfs.DefaultFileToSave
+import exceptions._
+import reactivemongo.core.errors.DatabaseException
 
 trait BoardServiceComponent {
 
@@ -22,7 +24,7 @@ trait BoardServiceComponent {
   trait BoardService {
     def listBoards: Future[List[entities.Board]]
     def findBoardByName(name: String): Future[Option[Board]]
-    def addThread(boardName: String, opPostData: PostForm, fileWrapper: FileWrapper): Future[Option[Int]]
+    def addThread(boardName: String, opPostData: PostForm, fileWrapper: FileWrapper): Future[Try[Int]]
     def findBoardLastPostNo(name: String): Future[Option[Int]]
   }
 
@@ -45,19 +47,9 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
     }
 
     def addThread(boardName: String, opPostData: PostForm, fileWrapper: FileWrapper) = {
-      ///
-      //1. Check if contentType is allowed (get board config)
-      //2. Get file dimensions (image OR later webm)
-      //3. Get new filename (timestamped)
-      //4. Create thumbnail
-      //5. Save thumbnail
-      //6. Save file
-      //7. Add thread
-      //8. Add op file ref
-
-      (boardRepository findByNameSimple boardName) map { boardOption =>
+      boardRepository.findByNameSimple(boardName) map { boardOption =>
         boardOption map { board =>
-          if (board.config.allowedContentTypes contains fileWrapper.contentType) {
+          if (board.config.allowedContentTypes contains fileWrapper.contentType.getOrElse("")) {
             processFile(fileWrapper) match {
               case (mainWrapper: FileWrapper, thumbWrapper: FileWrapper, metadata: FileMetadata) =>
                 val fileMetadata = FileMetadata.fileMetadataBSONHandler write metadata
@@ -68,32 +60,32 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
                   contentType = fileWrapper.contentType,
                   metadata = fileMetadata)
 
-                val thumbResultFuture = fileRepository.saveThumbnail(file = thumbWrapper.file,
+                val futureThumbResult = fileRepository.saveThumbnail(file = thumbWrapper.file,
                   fileToSave = thumbFileToSave)
-                val mainResultFuture = fileRepository.save(file = fileWrapper.file, fileToSave = mainFileToSave)
+                val futureFileResult = fileRepository.save(file = fileWrapper.file, fileToSave = mainFileToSave)
 
-                thumbResultFuture flatMap { fileResult =>
-                  mainResultFuture flatMap { mainResult =>
+                futureThumbResult flatMap { thumbResult =>
+                  futureFileResult flatMap { fileResult =>
                     boardRepository.incrementLastPostNo(boardName) flatMap { lastError =>
                       findBoardLastPostNo(boardName) map {
                         case Some(lastPostNo) =>
                           val newThread = Thread(_id = Some(BSONObjectID.generate),
-                                                 op = Post(no = lastPostNo, content = opPostData.content),
-                                                 replies = List[Post]())
+                            op = Post(no = lastPostNo, content = opPostData.content),
+                            replies = List[Post]())
 
                           threadRepository.add(boardName, newThread) flatMap { lastError =>
-                            threadRepository.setOpFileRef(boardName, newThread._id, fileResult.id) map { lastError =>
-                              Some(newThread.op.no)
+                            threadRepository.setOpFileRefs(boardName, newThread._id, fileResult.id, thumbResult.id) map {
+                              lastError => Success(newThread.op.no)
                             }
                           }
-                        case _ => Future(None)
+                        case _ => Future.successful(Failure(new PersistenceException(s"Cannot retrieve last post number for board $boardName")))
                       } flatMap (x => x)
                     }
                   }
-                } recover { case _ => None }
+                } recover { case _ => Failure(new PersistenceException("Cannot save file to the database")) }
             }
-          } else Future(None)
-        } getOrElse Future(None)
+          } else Future.successful(Failure(new BadInputException("Corrupted file or forbidden file type")))
+        } getOrElse Future.successful(Failure(new PersistenceException(s"Cannot retrieve board data for board $boardName")))
       } flatMap (x => x)
     }
 

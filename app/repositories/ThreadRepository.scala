@@ -13,7 +13,9 @@ trait ThreadRepositoryComponent {
     type A = Thread
 
     def add(boardName: String, thread: Thread): Future[LastError]
-    def setOpFileRef(boardName: String, threadId: Option[BSONObjectID], fileId: BSONValue): Future[LastError]
+
+    def setOpFileRefs(boardName: String, threadId: Option[BSONObjectID], fileId: BSONValue, thumbnailId: BSONValue)
+      : Future[LastError]
   }
 
 }
@@ -30,9 +32,10 @@ trait ThreadRepositoryComponentImpl extends ThreadRepositoryComponent {
       = update(BSONDocument("name" -> boardName),
                BSONDocument("$push" -> BSONDocument("threads" -> thread)))
 
-    def setOpFileRef(boardName: String, threadId: Option[BSONObjectID], fileId: BSONValue)
+    def setOpFileRefs(boardName: String, threadId: Option[BSONObjectID], fileId: BSONValue, thumbnailId: BSONValue)
       = update(BSONDocument("name" -> boardName, "threads._id" -> threadId.get),
-               BSONDocument("$set" -> BSONDocument("threads.$.op.fileRef" -> fileId)))
+               BSONDocument("$set" -> BSONDocument("threads.$.op.fileRef" -> fileId,
+                                                   "threads.$.op.thumbnailRef" -> thumbnailId)))
   }
 
 }

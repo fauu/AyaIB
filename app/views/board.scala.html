@@ -1,8 +1,16 @@
-@(board: entities.Board, postForm: Form[forms.PostForm])
+@(board: entities.Board, postForm: Form[forms.PostForm])(implicit flash: Flash)
 
 @import helper._
 
 @main(board.slashizedName + " - " + board.fullName) {
+
+  @flash.get("error").map { message =>
+    <div>@message</div>
+  }
+
+  @flash.get("failure").map { _ =>
+    <div>Internal error has occurred, please try again</div>
+  }
 
   <aside id="post-form-container">
     @form(action = routes.BoardController.createThread(board.name), 'enctype -> "multipart/form-data") {
