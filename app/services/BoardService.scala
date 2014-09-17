@@ -50,19 +50,22 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
       val thumbnailMaxDimension = 250
 
       fileWrapper.contentType getOrElse "" match {
-        case "image/jpeg" | "image/png" =>
+        case contentType @ ("image/jpeg" | "image/png" | "image/gif") =>
           AsyncImage(fileWrapper.file) map { image =>
             val thumbnail = if (image.ratio >= 1) image.copy.scaleToWidth(thumbnailMaxDimension)
                             else image.copy.scaleToHeight(thumbnailMaxDimension)
 
             val thumbnailFile = File.createTempFile("tmp", "ayafile")
 
-            // TODO: Stream this
-            thumbnail.writer(Format.JPEG).withCompression(70).write(thumbnailFile)
+            // TODO: Stream this?
+            (if (contentType == "image/gif") thumbnail.writer(Format.GIF)
+             else thumbnail.writer(Format.JPEG).withCompression(70)
+            ) write thumbnailFile
 
             val thumbnailWrapper = new FileWrapper(file = thumbnailFile,
                                                    filename = fileWrapper.filename,
-                                                   contentType = fileWrapper.contentType)
+                                                   contentType = Some(if (contentType == "image/gif") "image/gif"
+                                                                      else "image/jpeg"))
 
             (fileWrapper,
              thumbnailWrapper,

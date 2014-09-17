@@ -117,6 +117,7 @@ body {
   background: -webkit-linear-gradient(top, #aed0d1 0%, #e0eff1 200px);
   background: -moz-linear-gradient(top, #aed0d1 0%, #e0eff1 200px);
   background: linear-gradient(top, #aed0d1 0%, #e0eff1 200px);
+  margin-top: 10px;
 }
 a {
   color: #ffaf00;
@@ -140,6 +141,28 @@ a:hover {
   font-size: 18px;
   font-weight: bold;
 }
+#board > header {
+  text-align: center;
+}
+h2 {
+  font-size: 28px;
+  color: #ffaf00;
+  display: inline-block;
+  background-color: #ffffff;
+  padding: 5px 15px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px #9ec7c8;
+}
+#threads {
+  margin: 10px;
+  margin-top: 20px;
+}
+.thread {
+  margin-bottom: 10px;
+}
+.reply:not(.op) {
+  background-color: #ffffff;
+}
 #post-form-container {
   position: fixed;
   right: 0;
@@ -148,6 +171,7 @@ a:hover {
   padding: 10px 23px 10px 10px;
   background-color: #ffffff;
   border-top-left-radius: 5px;
+  box-shadow: 0 0 10px #9ec7c8;
 }
 #post-form-container > form {
   text-align: right;

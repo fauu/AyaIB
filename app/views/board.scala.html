@@ -12,6 +12,26 @@
     <div>Internal error has occurred, please try again</div>
   }
 
+  <main id="board">
+    <header>
+      <h2>@(board.slashizedName + " - " + board.fullName)</h2>
+    </header>
+    <section id="threads">
+      @for(thread <- board.threads.get) {
+        <article class="thread">
+          <article class="reply op">
+            op
+          </article>
+          @for(reply <- thread.replies) {
+            <article class="reply">
+              reply
+            </article>
+          }
+        </article>
+      }
+    </section>
+  </main>
+
   <aside id="post-form-container">
     @form(action = routes.BoardController.createThread(board.name), 'enctype -> "multipart/form-data") {
       @textarea(postForm("content"), '_showConstraints -> false, 'placeholder -> "Message")

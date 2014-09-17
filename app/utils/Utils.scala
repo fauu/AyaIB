@@ -9,7 +9,7 @@ object Utils {
                                                          (1024, "KB", "#"),
                                                          (1, "bytes", "#"))
 
-  private lazy val contentTypesExtensions = Map("image/jpeg" -> "jpg", "image/png" -> "png")
+  private lazy val contentTypesExtensions = Map("image/jpeg" -> "jpg", "image/png" -> "png", "image/gif" -> "gif")
 
   def humanizeFileLength(length: Long): String =
     (fileLengthConversionThresholds dropWhile (_._1 > length) take 1 map { threshold =>

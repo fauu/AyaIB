@@ -1,0 +1,26 @@
+#board > header {
+  text-align: center;
+}
+
+h2 {
+  font-size: 28px;
+  color: @main-header;
+  display: inline-block;
+  background-color: @text-bg;
+  padding: @default-padding/2 @default-padding*1.5;
+  border-radius: @default-border-radius;
+  .outer-glow;
+}
+
+#threads {
+  margin: @default-padding;
+  margin-top: @default-padding*2;
+}
+
+.thread {
+  margin-bottom: @default-padding;
+}
+
+.reply:not(.op) {
+  background-color: @text-bg;
+}

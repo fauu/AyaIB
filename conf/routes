@@ -2,10 +2,13 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET        /                    controllers.ImageboardController.index
+GET         /                    controllers.ImageboardController.index
 
-GET        /:name               controllers.BoardController.fixUrlAndRedirect(name: String)
-GET        /:name/              controllers.BoardController.show(name: String)
-POST       /:boardName          controllers.BoardController.createThread(boardName: String)
+GET         /:name               controllers.BoardController.fixUrlAndRedirect(name: String)
+GET         /:name/              controllers.BoardController.show(name: String)
+POST        /:boardName          controllers.BoardController.createThread(boardName: String)
 
-GET        /public/*file        controllers.Assets.at(path="/public", file)
+GET         /files/:name         controllers.FileController.get(name: String, thumbnail: Boolean = false)
+GET         /files/thumbs/:name  controllers.FileController.get(name: String, thumbnail: Boolean = true)
+
+GET         /public/*file        controllers.Assets.at(path="/public", file)
