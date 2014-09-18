@@ -13,6 +13,8 @@ import reactivemongo.bson.BSONObjectID
 import repositories.{BoardRepositoryComponent, FileRepositoryComponent, ThreadRepositoryComponent}
 import utils.Utils
 import wrappers.FileWrapper
+import java.io.File
+import com.sksamuel.scrimage.{AsyncImage, Format}
 
 trait BoardServiceComponent {
 
@@ -39,34 +41,36 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
 
     def findBoardByName(name: String) = boardRepository.findByName(name)
 
-    private def fileValidity(boardConfig: BoardConfig, fileWrapper: FileWrapper): Future[Unit] =
-      if (boardConfig.allowedContentTypes contains fileWrapper.contentType.getOrElse("")) Future.successful(Unit)
-      else Future.failed(new IncorrectInputException("Corrupted file or forbidden file type"))
-
-    private def processFile(fileWrapper: FileWrapper): Future[(FileWrapper, FileWrapper, FileMetadata)] = {
-      import java.io.File
-      import com.sksamuel.scrimage.{AsyncImage, Format}
-
+    private def thumbnailImage(image: AsyncImage): Future[AsyncImage] = {
       val thumbnailMaxDimension = 250
 
+      if (image.dimensions._1 > thumbnailMaxDimension || image.dimensions._2 > thumbnailMaxDimension) {
+        if (image.ratio >= 1) image.scaleToWidth(thumbnailMaxDimension)
+        else image.scaleToHeight(thumbnailMaxDimension)
+      } else Future(image)
+    }
+
+    // TODO: Add indication text to mark gif thumbnails
+    // TODO: Make animated gif thumbnails
+    private def processFile(fileWrapper: FileWrapper): Future[(FileWrapper, FileWrapper, FileMetadata)] = {
       fileWrapper.contentType getOrElse "" match {
         case contentType @ ("image/jpeg" | "image/png" | "image/gif") =>
-          AsyncImage(fileWrapper.file) map { image =>
-            val thumbnail = if (image.ratio >= 1) image.copy.scaleToWidth(thumbnailMaxDimension)
-                            else image.copy.scaleToHeight(thumbnailMaxDimension)
+          for {
+            image <- AsyncImage(fileWrapper.file)
 
-            val thumbnailFile = File.createTempFile("tmp", "ayafile")
+            imageCopy <- AsyncImage(fileWrapper.file)
 
-            // TODO: Stream this?
-            (if (contentType == "image/gif") thumbnail.writer(Format.GIF)
-             else thumbnail.writer(Format.JPEG).withCompression(70)
-            ) write thumbnailFile
+            thumbnail <- thumbnailImage(imageCopy)
 
-            val thumbnailWrapper = new FileWrapper(file = thumbnailFile,
-                                                   filename = fileWrapper.filename,
-                                                   contentType = Some(if (contentType == "image/gif") "image/gif"
-                                                                      else "image/jpeg"))
+            // TODO: Stream this instead of using temp file?
+            thumbnailFile = File.createTempFile("tmp", "ayafile")
 
+            _ <- thumbnail.writer(Format.JPEG) write thumbnailFile
+
+            thumbnailWrapper = new FileWrapper(file = thumbnailFile,
+                                               filename = fileWrapper.filename,
+                                               contentType = "image/jpeg")
+          } yield {
             (fileWrapper,
              thumbnailWrapper,
              FileMetadata(originalName = fileWrapper.filename,
@@ -76,6 +80,10 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
         case _ => throw new UnsupportedOperationException("File format not supported")
       }
     }
+
+    private def fileValidity(boardConfig: BoardConfig, fileWrapper: FileWrapper): Future[Unit] =
+      if (boardConfig.allowedContentTypes contains fileWrapper.contentType.getOrElse("")) Future.successful(Unit)
+      else Future.failed(new IncorrectInputException("Corrupted file or forbidden file type"))
 
     private def generateFilename(fileWrapper: FileWrapper, timestamp: Long, thumbnail: Boolean = false): String = {
       val extension = Utils.contentTypeToExtension(fileWrapper.contentType.get).getOrElse("ayafile")
