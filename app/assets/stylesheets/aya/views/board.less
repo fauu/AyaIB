@@ -18,9 +18,36 @@ h2 {
 }
 
 .thread {
-  margin-bottom: @default-padding;
+  margin-bottom: @default-padding*2;
+  display: block;
+  width: 100%;
+  float: left;
 }
 
 .reply:not(.op) {
   background-color: @text-bg;
+}
+
+.file {
+  display: inline;
+
+  > .info {
+  }
+
+  img {
+    float: left;
+    margin-right: @default-padding;
+  }
+}
+
+.reply.op {
+  display: inline-block;
+
+  > .info {
+   display: block;
+  }
+
+  > .content {
+   display: block;
+  }
 }

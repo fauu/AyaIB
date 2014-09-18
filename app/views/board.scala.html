@@ -19,8 +19,26 @@
     <section id="threads">
       @for(thread <- board.threads.get) {
         <article class="thread">
+            @defining(thread.op) { op =>
+             <section class="file">
+               <aside class="info">
+                 @defining(op.fileMetadata.get) { metadata =>
+                   File: @metadata.originalName
+                 (@metadata.size · @metadata.dimensions)
+                 }
+               </aside>
+               <a href="@routes.FileController.get(name = op.fileName.get, thumbnail = false)">
+                 <img src="@routes.FileController.get(name = op.thumbnailName.get, thumbnail = true)" />
+               </a>
+             </section>
           <article class="reply op">
-            op
+            <section class="info">
+              <strong>Anonymous</strong> · #@op.no
+            </section>
+            <section class="content">
+              @op.content
+            </section>
+            }
           </article>
           @for(reply <- thread.replies) {
             <article class="reply">

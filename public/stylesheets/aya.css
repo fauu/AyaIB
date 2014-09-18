@@ -158,10 +158,30 @@ h2 {
   margin-top: 20px;
 }
 .thread {
-  margin-bottom: 10px;
+  margin-bottom: 20px;
+  display: block;
+  width: 100%;
+  float: left;
 }
 .reply:not(.op) {
   background-color: #ffffff;
+}
+.file {
+  display: inline;
+}
+.file img {
+  float: left;
+  margin-right: 10px;
+}
+.reply.op {
+  display: inline-block;
+}
+.reply.op > .info {
+  display: block;
+  vertical-align: top;
+}
+.reply.op > .content {
+  display: block;
 }
 #post-form-container {
   position: fixed;

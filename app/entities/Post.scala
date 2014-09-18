@@ -7,8 +7,9 @@ case class Post (
   _id: Option[BSONObjectID] = Some(BSONObjectID.generate),
   no: Int,
   content: String,
-  fileRef: Option[BSONObjectID] = None,
-  thumbnailRef: Option[BSONObjectID] = None
+  fileName: Option[String] = None,
+  fileMetadata: Option[FileMetadata] = None,
+  thumbnailName: Option[String] = None
 ) extends MongoEntity
 
 object Post {

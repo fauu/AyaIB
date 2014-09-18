@@ -42,7 +42,7 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
     def findBoardByName(name: String) = boardRepository.findByName(name)
 
     private def thumbnailImage(image: AsyncImage): Future[AsyncImage] = {
-      val thumbnailMaxDimension = 250
+      val thumbnailMaxDimension = 200
 
       if (image.dimensions._1 > thumbnailMaxDimension || image.dimensions._2 > thumbnailMaxDimension) {
         if (image.ratio >= 1) image.scaleToWidth(thumbnailMaxDimension)
@@ -69,7 +69,7 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
 
             thumbnailWrapper = new FileWrapper(file = thumbnailFile,
                                                filename = fileWrapper.filename,
-                                               contentType = "image/jpeg")
+                                               contentType = Some("image/jpeg"))
           } yield {
             (fileWrapper,
              thumbnailWrapper,
@@ -97,10 +97,8 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
 
         _ <- fileValidity(board.config, fileWrapper)
 
-        (mainWrapper: FileWrapper, thumbWrapper: FileWrapper, metadata: FileMetadata)
+        (mainWrapper: FileWrapper, thumbWrapper: FileWrapper, fileMetadata: FileMetadata)
           <- processFile(fileWrapper)
-
-        fileMetadata = FileMetadata.fileMetadataBSONHandler write metadata
 
         timestamp = System.currentTimeMillis()
 
@@ -108,24 +106,24 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
                                             contentType = thumbWrapper.contentType)
 
         mainFileToSave = DefaultFileToSave(filename = generateFilename(fileWrapper, timestamp),
-                                           contentType = fileWrapper.contentType,
-                                           metadata = fileMetadata)
+                                           contentType = fileWrapper.contentType)
 
-        thumbResult <- fileRepository.saveThumbnail(thumbWrapper.file, thumbFileToSave)
 
-        fileResult <- fileRepository.save(fileWrapper.file, mainFileToSave)
+        _ <- fileRepository.saveThumbnail(thumbWrapper.file, thumbFileToSave)
+
+        _ <- fileRepository.save(fileWrapper.file, mainFileToSave)
 
         _ <- boardRepository.incrementLastPostNo(boardName)
 
         Some(lastPostNo) <- findBoardLastPostNo(boardName)
 
         newThread = Thread(_id = Some(BSONObjectID.generate),
-                           op = Post(no = lastPostNo, content = opPostData.content),
+                           op = Post(no = lastPostNo, content = opPostData.content, fileMetadata = Some(fileMetadata)),
                            replies = List[Post]())
 
         _ <- threadRepository.add(boardName, newThread)
 
-        _ <- threadRepository.setOpFileRefs(boardName, newThread._id, fileResult.id, thumbResult.id)
+        _ <- threadRepository.setOpFilenames(boardName, newThread._id, mainFileToSave.filename, thumbFileToSave.filename)
       } yield {
         Success(newThread.op.no)
       }) recover {
