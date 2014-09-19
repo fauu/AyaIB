@@ -7,9 +7,13 @@ h2 {
   color: @main-header;
   display: inline-block;
   background-color: @text-bg;
-  padding: @default-padding/2 @default-padding*1.5;
   border-radius: @default-border-radius;
   .outer-glow;
+
+  > a {
+    display: inline-block;
+    margin: @default-padding*1.4 @default-padding*1.2;
+  }
 }
 
 #threads {

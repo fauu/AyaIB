@@ -81,7 +81,7 @@ object BoardController extends Controller {
       val futureNewPostNoOption = boardService.addPost(boardName, Some(threadNo), postData, fileWrapperOption)
 
       futureNewPostNoOption map {
-        case Success(newPostNo) => Redirect(routes.BoardController.showThread(boardName, threadNo) + "#" + newPostNo)
+        case Success(newPostNo) => Redirect(routes.BoardController.showThread(boardName, threadNo) + "#post-" + newPostNo)
 
         case Failure(ex: IncorrectInputException)
           => Redirect(routes.BoardController.show(boardName)).flashing("error" -> ex.getMessage)

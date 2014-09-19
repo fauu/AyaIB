@@ -1,4 +1,4 @@
-@(thread: entities.Thread)
+@(board: entities.Board, thread: entities.Thread, singleThreadView: Boolean = false)
 
 <article class="thread">
   @defining(thread.op) { op =>
@@ -13,9 +13,13 @@
         <img src="@routes.FileController.get(name = op.thumbnailName.get, thumbnail = true)" />
       </a>
     </section>
-    <article class="reply op">
+    <article id="post-@op.no" class="reply op">
       <section class="info">
-        <strong>Anonymous</strong> · #@op.no
+        <span class="poster-name">Anonymous</span> ·
+        <a href="@routes.BoardController.showThread(board.name, thread.op.no)#post-@op.no">#@op.no</a>
+        @if(!singleThreadView) {
+         · <a class="reply-link" href="@routes.BoardController.showThread(board.name, thread.op.no)">Reply</a>
+        }
       </section>
       <section class="content">
       @op.content
@@ -23,8 +27,14 @@
   }
 </article>
   @for(reply <- thread.replies) {
-    <article class="reply">
-              reply
+    <article id="post-@reply.no" class="reply">
+      <section class="info">
+        <span class="poster-name">Anonymous</span> ·
+        <a href="@routes.BoardController.showThread(board.name, thread.op.no)#post-@reply.no">#@reply.no</a>
+      </section>
+      <section class="content">
+        @reply.content
+      </section>
     </article>
   }
 </article>

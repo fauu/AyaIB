@@ -5,25 +5,37 @@
   float: left;
 }
 
-.reply:not(.op) {
-  background-color: @text-bg;
+.thread:not(:last-child) {
+  padding-bottom: @default-padding*2.7;
+  border-bottom: 1px dotted @bg-darker;
 }
 
 .file {
   display: inline;
 
   > .info {
+    font-size: 11px;
   }
 
   img {
     float: left;
-    margin-right: @default-padding;
+    margin-right: @default-padding*1.5;
+  }
+}
+
+.reply {
+  display: table;
+
+  > .info {
+    height: 1.7em;
+
+    > .poster-name {
+      font-weight: bold;
+    }
   }
 }
 
 .reply.op {
-  display: inline-block;
-
   > .info {
     display: block;
   }
@@ -31,4 +43,20 @@
   > .content {
     display: block;
   }
+}
+
+.reply:not(.op) {
+
+  background-color: @text-bg;
+  margin: @default-padding;
+  padding: @default-padding/2 @default-padding;
+  border-radius: @default-border-radius;
+  .outer-glow;
+
+  > .info {
+  }
+}
+
+.reply-link {
+  font-weight: bold;
 }

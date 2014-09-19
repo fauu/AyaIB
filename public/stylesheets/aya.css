@@ -109,22 +109,24 @@ a img {
   outline: 0;
 }
 html {
-  height: 100%;
+  min-height: 100%;
 }
 body {
-  color: #000000;
-  background-color: #aed0d1;
-  background: -webkit-linear-gradient(top, #aed0d1 0%, #e0eff1 200px);
-  background: -moz-linear-gradient(top, #aed0d1 0%, #e0eff1 200px);
-  background: linear-gradient(top, #aed0d1 0%, #e0eff1 200px);
+  color: #000030;
+  background-color: #bed9da;
+  background: -webkit-linear-gradient(top, #bed9da 0%, #f2f8f9 200px);
+  background: -moz-linear-gradient(top, #bed9da 0%, #f2f8f9 200px);
+  background: linear-gradient(top, #bed9da 0%, #f2f8f9 200px);
   margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.3em;
 }
 a {
-  color: #ffaf00;
+  color: #ff9f00;
   text-decoration: none;
 }
 a:hover {
-  color: #ffbf33;
+  color: #ffb233;
 }
 #board-list-container {
   text-align: center;
@@ -146,12 +148,15 @@ a:hover {
 }
 h2 {
   font-size: 28px;
-  color: #ffaf00;
+  color: #ff9f00;
   display: inline-block;
   background-color: #ffffff;
-  padding: 5px 15px;
   border-radius: 5px;
-  box-shadow: 0 0 10px #9ec7c8;
+  box-shadow: 0 0 10px #aed0d1;
+}
+h2 > a {
+  display: inline-block;
+  margin: 14px 12px;
 }
 #threads {
   margin: 10px;
@@ -163,24 +168,44 @@ h2 {
   width: 100%;
   float: left;
 }
-.reply:not(.op) {
-  background-color: #ffffff;
+.thread:not(:last-child) {
+  padding-bottom: 27px;
+  border-bottom: 1px dotted #bed9da;
 }
 .file {
   display: inline;
 }
+.file > .info {
+  font-size: 11px;
+}
 .file img {
   float: left;
-  margin-right: 10px;
+  margin-right: 15px;
 }
-.reply.op {
-  display: inline-block;
+.reply {
+  display: table;
+}
+.reply > .info {
+  height: 1.7em;
+}
+.reply > .info > .poster-name {
+  font-weight: bold;
 }
 .reply.op > .info {
   display: block;
 }
 .reply.op > .content {
   display: block;
+}
+.reply:not(.op) {
+  background-color: #ffffff;
+  margin: 10px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px #aed0d1;
+}
+.reply-link {
+  font-weight: bold;
 }
 #post-form-container {
   position: fixed;
@@ -190,7 +215,7 @@ h2 {
   padding: 10px 23px 10px 10px;
   background-color: #ffffff;
   border-top-left-radius: 5px;
-  box-shadow: 0 0 10px #9ec7c8;
+  box-shadow: 0 0 10px #aed0d1;
 }
 #post-form-container > form {
   text-align: right;

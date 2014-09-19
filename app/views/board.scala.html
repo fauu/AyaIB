@@ -14,14 +14,18 @@
 
   <main id="board">
     <header>
-      <h2>@(board.slashizedName + " - " + board.fullName)</h2>
+      <h2>
+        <a href="@routes.BoardController.show(board.name)">
+          @(board.slashizedName + " - " + board.fullName)
+        </a>
+      </h2>
     </header>
     <section id="threads">
     @threadOption match {
-      case Some(thread) => { @views.html.thread(thread) }
+      case Some(thread) => { @views.html.thread(board, thread, singleThreadView = true) }
       case _ => {
         @for(thread <- board.threads.get) {
-          @views.html.thread(thread)
+          @views.html.thread(board, thread)
         }
       }
     }
