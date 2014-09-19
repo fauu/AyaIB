@@ -1,7 +1,7 @@
 package context
 
-import repositories.{PostRepositoryComponentImpl, FileRepositoryComponentImpl, ThreadRepositoryComponentImpl, BoardRepositoryComponentImpl}
-import services.{FileServiceComponentImpl, BoardServiceComponentImpl}
+import repositories._
+import services._
 
 object Context {
 
@@ -10,9 +10,9 @@ object Context {
                                                             with PostRepositoryComponentImpl
                                                             with FileRepositoryComponentImpl
 
-  val fileServiceComponent = new FileServiceComponentImpl with FileRepositoryComponentImpl
-
   val boardService = boardServiceComponent.boardService
+
+  val fileServiceComponent = new FileServiceComponentImpl with FileRepositoryComponentImpl
 
   val fileService = fileServiceComponent.fileService
 

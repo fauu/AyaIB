@@ -1,7 +1,7 @@
 package entities
 
-import reactivemongo.bson.BSONObjectID
 import reactivemongo.bson
+import reactivemongo.bson.BSONObjectID
 
 case class Thread (
   _id: Option[BSONObjectID] = Some(BSONObjectID.generate),

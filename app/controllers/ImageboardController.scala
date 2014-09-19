@@ -1,10 +1,11 @@
 package controllers
 
 import play.api.mvc.{Action, Controller}
-import scala.concurrent.ExecutionContext
-import ExecutionContext.Implicits.global
-import entities.Board
+
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import context.Context
+import entities.Board
 
 object ImageboardController extends Controller {
 

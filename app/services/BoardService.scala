@@ -1,20 +1,22 @@
 package services
 
+import java.io.File
+
 import scala.{Option, Some}
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
+import play.api.libs.concurrent.Execution.Implicits._
+
+import com.sksamuel.scrimage.{AsyncImage, Format}
 import entities._
 import exceptions._
 import forms.PostForm
-import play.api.libs.concurrent.Execution.Implicits._
 import reactivemongo.api.gridfs.DefaultFileToSave
 import reactivemongo.bson.BSONObjectID
-import repositories.{PostRepositoryComponent, BoardRepositoryComponent, FileRepositoryComponent, ThreadRepositoryComponent}
+import repositories.{BoardRepositoryComponent, FileRepositoryComponent, PostRepositoryComponent, ThreadRepositoryComponent}
 import utils.Utils
 import wrappers.FileWrapper
-import java.io.File
-import com.sksamuel.scrimage.{AsyncImage, Format}
 
 trait BoardServiceComponent {
 
@@ -22,13 +24,18 @@ trait BoardServiceComponent {
 
   trait BoardService {
     def listBoards: Future[List[entities.Board]]
+
     def findBoardByName(name: String): Future[Option[Board]]
+
     def addPost(boardName: String,
                 threadNoOption: Option[Int] = None,
                 postData: PostForm,
                 fileWrapperOption: Option[FileWrapper]): Future[Try[Int]]
+
     def findBoardLastPostNo(name: String): Future[Option[Int]]
+
     def findBoardWithSingleThread(boardName: String, threadNo: Int): Future[Try[(Board, Thread)]]
+
   }
 
 }
@@ -42,6 +49,7 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
   def boardService = new BoardServiceImpl
 
   class BoardServiceImpl extends BoardService {
+
     def listBoards = boardRepository.findAllSimple
 
     def findBoardByName(name: String) = boardRepository.findByName(name)
@@ -96,7 +104,12 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
       name + "." + extension
     }
 
-    def addPost(boardName: String, threadNoOption: Option[Int] = None, postData: PostForm, fileWrapperOption: Option[FileWrapper]) = {
+    def addPost(
+      boardName: String,
+      threadNoOption: Option[Int] = None,
+      postData: PostForm,
+      fileWrapperOption: Option[FileWrapper]
+    ) = {
       val futureFileInfo = fileWrapperOption match {
         case Some(fileWrapper) =>
           for {
@@ -169,6 +182,7 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
         case (ex: Exception) => Failure(new PersistenceException(s"Cannot retrieve board with single thread: $ex"))
       }
     }
+
   }
 
 }

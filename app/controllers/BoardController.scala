@@ -1,20 +1,18 @@
 package controllers
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
+
+import play.api.Logger
+import play.api.libs.Files.TemporaryFile
+import play.api.mvc.{Action, Controller}
+import play.api.mvc.MultipartFormData.FilePart
 
 import ExecutionContext.Implicits.global
 import context.Context
-import entities.{FileMetadata, Post, Thread}
-import forms.PostForm
-import play.api.mvc.{Results, Action, Controller}
-import reactivemongo.api.gridfs.DefaultFileToSave
-import wrappers.FileWrapper
-import reactivemongo.bson.BSONObjectID
-import scala.util.{Failure, Success}
 import exceptions.IncorrectInputException
-import play.api.Logger
-import play.api.libs.Files.TemporaryFile
-import play.api.mvc.MultipartFormData.FilePart
+import forms.PostForm
+import wrappers.FileWrapper
 
 object BoardController extends Controller {
 

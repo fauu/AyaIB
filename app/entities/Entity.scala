@@ -1,5 +1,3 @@
 package entities
 
-trait Entity {
-
-}
+trait Entity { }

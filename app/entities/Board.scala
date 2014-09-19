@@ -1,7 +1,7 @@
 package entities
 
-import reactivemongo.bson.BSONObjectID
 import reactivemongo.bson
+import reactivemongo.bson.BSONObjectID
 
 case class Board (
   _id: Option[BSONObjectID] = None,

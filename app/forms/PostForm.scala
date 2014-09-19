@@ -9,10 +9,8 @@ case class PostForm(
 
 object PostForm {
 
-  def get = Form(
-    mapping(
+  def get = Form(mapping(
       "content" -> nonEmptyText(maxLength = 1800)
-    )(PostForm.apply)(PostForm.unapply)
-  )
+  )(PostForm.apply)(PostForm.unapply))
 
 }
