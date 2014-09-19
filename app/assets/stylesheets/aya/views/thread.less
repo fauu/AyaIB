@@ -3,19 +3,15 @@
   display: block;
   width: 100%;
   float: left;
-}
 
-.thread:not(:last-child) {
-  padding-bottom: @default-padding*2.7;
-  border-bottom: 1px dotted @bg-darker;
+  &:not(:last-child) {
+    padding-bottom: @default-padding*2.7;
+    border-bottom: 1px dotted @bg-darker;
+  }
 }
 
 .file {
   display: inline;
-
-  > .info {
-    font-size: 11px;
-  }
 
   img {
     float: left;
@@ -23,37 +19,51 @@
   }
 }
 
-.reply {
-  display: table;
+.file-info {
+  font-size: 11px;
 
-  > .info {
-    height: 1.7em;
+  > a {
+    color: @text;
+    text-decoration: underline;
 
-    > .poster-name {
-      font-weight: bold;
+    &:hover {
+      color: @link;
     }
   }
 }
 
-.reply.op {
+
+.reply {
+  display: table;
+  max-width: 60em;
+
   > .info {
-    display: block;
+    > .poster-name {
+      font-weight: bold;
+    }
   }
 
   > .content {
-    display: block;
+    display: inline;
+
+    &:before {
+      content: " ";
+      display: inline-block;
+      height: @default-padding*2;
+    }
   }
 }
 
 .reply:not(.op) {
-
   background-color: @text-bg;
   margin: @default-padding;
-  padding: @default-padding/2 @default-padding;
+  margin-right: 0;
+  padding: @default-padding/2 @default-padding @default-padding/1.2 @default-padding;
   border-radius: @default-border-radius;
   .outer-glow;
 
-  > .info {
+  &:last-child {
+    margin-bottom: 0;
   }
 }
 

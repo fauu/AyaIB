@@ -3,10 +3,10 @@
 <article class="thread">
   @defining(thread.op) { op =>
     <section class="file">
-      <aside class="info">
+      <aside class="file-info">
         @defining(op.fileMetadata.get) { metadata =>
-          File: @metadata.originalName
-        (@metadata.size · @metadata.dimensions)
+          File: <a href="@routes.FileController.get(name = op.fileName.get, thumbnail = false)">@metadata.originalName</a>
+          (@metadata.size · @metadata.dimensions)
         }
       </aside>
       <a href="@routes.FileController.get(name = op.fileName.get, thumbnail = false)">
@@ -21,9 +21,7 @@
          · <a class="reply-link" href="@routes.BoardController.showThread(board.name, thread.op.no)">Reply</a>
         }
       </section>
-      <section class="content">
-      @op.content
-      </section>
+      <blockquote class="content">@op.content</blockquote>
   }
 </article>
   @for(reply <- thread.replies) {
@@ -32,9 +30,21 @@
         <span class="poster-name">Anonymous</span> ·
         <a href="@routes.BoardController.showThread(board.name, thread.op.no)#post-@reply.no">#@reply.no</a>
       </section>
-      <section class="content">
-        @reply.content
-      </section>
+      @reply.fileMetadata match {
+        case Some(metadata) => {
+          <section class="file-info">
+            File: <a href="@routes.FileController.get(name = reply.fileName.get, thumbnail = false)">@metadata.originalName</a>
+            (@metadata.size · @metadata.dimensions)
+          </section>
+          <section class="file">
+            <a href="@routes.FileController.get(name = reply.fileName.get, thumbnail = false)">
+              <img src="@routes.FileController.get(name = reply.thumbnailName.get, thumbnail = true)" />
+            </a>
+          </section>
+        }
+        case None => { }
+      }
+      <blockquote class="content">@reply.content</blockquote>
     </article>
   }
 </article>
