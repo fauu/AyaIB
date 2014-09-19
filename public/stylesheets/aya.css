@@ -152,7 +152,7 @@ h2 {
   display: inline-block;
   background-color: #ffffff;
   border-radius: 5px;
-  box-shadow: 0 0 10px #aed0d1;
+  box-shadow: 0 0 10px #bed9da;
 }
 h2 > a {
   display: inline-block;
@@ -161,27 +161,16 @@ h2 > a {
 #threads {
   margin: 10px;
   margin-top: 20px;
-  width: 100%;
 }
 .thread {
   margin-bottom: 20px;
-  display: block;
-  width: 100%;
-  float: left;
+  overflow: hidden;
 }
 .thread:not(:last-child) {
   padding-bottom: 27px;
-  border-bottom: 1px dotted #bed9da;
-}
-.file {
-  display: inline;
-}
-.file img {
-  float: left;
-  margin-right: 15px;
 }
 .file-info {
-  font-size: 11px;
+  font-size: 12px;
 }
 .file-info > a {
   color: #000030;
@@ -190,34 +179,61 @@ h2 > a {
 .file-info > a:hover {
   color: #ff9f00;
 }
-.reply {
-  display: table;
-  max-width: 60em;
+img {
+  float: left;
+  margin: 0 10px 10px 0;
 }
-.reply > .info > .poster-name {
+.poster-name {
   font-weight: bold;
+  color: #117743;
 }
-.reply > .content {
-  display: inline;
-}
-.reply > .content:before {
-  content: " ";
-  display: inline-block;
-  height: 20px;
-}
-.reply:not(.op) {
+.thread > header {
   background-color: #ffffff;
-  margin: 10px;
-  margin-right: 0;
-  padding: 5px 10px 8.33333333px 10px;
+  padding: 5px 10px;
+  margin-bottom: 5px;
   border-radius: 5px;
-  box-shadow: 0 0 10px #aed0d1;
+  box-shadow: 0 0 10px #bed9da;
 }
-.reply:not(.op):last-child {
-  margin-bottom: 0;
-}
-.reply-link {
+.thread > header > .reply-link {
   font-weight: bold;
+}
+.post {
+  margin-bottom: 10px;
+  max-width: 65em;
+}
+.post > .indicator {
+  color: #bed9da;
+  font-weight: bold;
+  float: left;
+  margin-right: 5px;
+}
+.post > .body {
+  display: table;
+  border-radius: 5px;
+}
+.post > .body > .content {
+  min-width: 20em;
+}
+.post:first-of-type > .body {
+  padding: 2.5px 5px;
+}
+.post:first-of-type > .body > .content {
+  margin: 10px 0 5px 0;
+}
+.post:not(:first-of-type) > .body {
+  padding: 5px 10px;
+  background-color: #ffffff;
+  box-shadow: 0 0 10px #bed9da;
+}
+.post:not(:first-of-type) > .body img {
+  margin-right: 20px;
+}
+.post:not(:first-of-type) > .body > .content {
+  padding: 10px;
+  padding-left: 20px;
+}
+.post:last-child {
+  margin-bottom: 0;
 }
 #post-form-container {
   position: fixed;
@@ -227,7 +243,7 @@ h2 > a {
   padding: 10px;
   background-color: #ffffff;
   border-top-left-radius: 5px;
-  box-shadow: 0 0 10px #aed0d1;
+  box-shadow: 0 0 10px #bed9da;
 }
 #post-form-container > form {
   text-align: right;

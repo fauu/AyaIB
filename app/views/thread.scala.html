@@ -1,50 +1,49 @@
 @(board: entities.Board, thread: entities.Thread, singleThreadView: Boolean = false)
 
-<article class="thread">
-  @defining(thread.op) { op =>
-    <section class="file">
-      <aside class="file-info">
-        @defining(op.fileMetadata.get) { metadata =>
-          File: <a href="@routes.FileController.get(name = op.fileName.get, thumbnail = false)">@metadata.originalName</a>
-          (@metadata.size · @metadata.dimensions)
-        }
-      </aside>
-      <a href="@routes.FileController.get(name = op.fileName.get, thumbnail = false)">
-        <img src="@routes.FileController.get(name = op.thumbnailName.get, thumbnail = true)" />
-      </a>
-    </section>
-    <article id="post-@op.no" class="reply op">
-      <section class="info">
-        <span class="poster-name">Anonymous</span> ·
-        <a href="@routes.BoardController.showThread(board.name, thread.op.no)#post-@op.no">#@op.no</a>
-        @if(!singleThreadView) {
-         · <a class="reply-link" href="@routes.BoardController.showThread(board.name, thread.op.no)">Reply</a>
-        }
-      </section>
-      <blockquote class="content">@op.content</blockquote>
+@postHeader(post: entities.Post, isOp: Boolean) = {
+  <header>
+    <span class="poster-name">
+      Anonymous
+    </span> ·
+    <a class="no" href="@routes.BoardController.showThread(board.name, thread.op.no)#post-@post.no">
+      #@post.no
+    </a>
+    @if(isOp && !singleThreadView) {
+      · <a class="reply-link" href="@routes.BoardController.showThread(board.name, thread.op.no)">Reply</a>
+    }
+  </header>
+}
+
+@file(post: entities.Post) = {
+  @defining(post.fileMetadata.get) { metadata =>
+    <aside class="file-info">
+      <a href="@routes.FileController.get(name = post.fileName.get, thumbnail = false)">@metadata.originalName</a>
+      (@metadata.size · @metadata.dimensions)
+    </aside>
   }
-</article>
-  @for(reply <- thread.replies) {
-    <article id="post-@reply.no" class="reply">
-      <section class="info">
-        <span class="poster-name">Anonymous</span> ·
-        <a href="@routes.BoardController.showThread(board.name, thread.op.no)#post-@reply.no">#@reply.no</a>
-      </section>
-      @reply.fileMetadata match {
-        case Some(metadata) => {
-          <section class="file-info">
-            File: <a href="@routes.FileController.get(name = reply.fileName.get, thumbnail = false)">@metadata.originalName</a>
-            (@metadata.size · @metadata.dimensions)
-          </section>
-          <section class="file">
-            <a href="@routes.FileController.get(name = reply.fileName.get, thumbnail = false)">
-              <img src="@routes.FileController.get(name = reply.thumbnailName.get, thumbnail = true)" />
-            </a>
-          </section>
+  <a href="@routes.FileController.get(name = post.fileName.get, thumbnail = false)">
+    <img src="@routes.FileController.get(name = post.thumbnailName.get, thumbnail = true)" />
+  </a>
+}
+
+<article class="thread">
+  @postHeader(post = thread.op, isOp = true)
+  @file(post = thread.op)
+  @for(post <- thread.op :: thread.replies) {
+    <article id="post-@post.no" class="post">
+      @if(post != thread.op) { <aside class="indicator">>></aside> }
+      <section class="body">
+        @if(post != thread.op) {
+          @postHeader(post, isOp = false)
+          @post.fileMetadata match {
+            case Some(metadata) => { @file(post) }
+            case None => {}
+          }
         }
-        case None => { }
-      }
-      <blockquote class="content">@reply.content</blockquote>
+        <blockquote class="content">
+          @post.content
+        </blockquote>
+      </section>
     </article>
   }
 </article>

@@ -1,26 +1,14 @@
 .thread {
   margin-bottom: @default-padding*2;
-  display: block;
-  width: 100%;
-  float: left;
+  overflow: hidden;
 
   &:not(:last-child) {
     padding-bottom: @default-padding*2.7;
-    border-bottom: 1px dotted @bg-darker;
-  }
-}
-
-.file {
-  display: inline;
-
-  img {
-    float: left;
-    margin-right: @default-padding*1.5;
   }
 }
 
 .file-info {
-  font-size: 11px;
+  font-size: 12px;
 
   > a {
     color: @text;
@@ -32,41 +20,76 @@
   }
 }
 
+img {
+  float: left;
+  margin: 0 @default-padding @default-padding 0;
+}
 
-.reply {
-  display: table;
-  max-width: 60em;
+.poster-name {
+  font-weight: bold;
+  color: @anonymous-green;
+}
 
-  > .info {
-    > .poster-name {
-      font-weight: bold;
-    }
-  }
+.thread > header {
+  background-color: @text-bg;
+  padding: @default-padding/2 @default-padding;
+  margin-bottom: @default-padding/2;
+  border-radius: @default-border-radius;
+  .outer-glow;
 
-  > .content {
-    display: inline;
-
-    &:before {
-      content: " ";
-      display: inline-block;
-      height: @default-padding*2;
-    }
+  > .reply-link {
+    font-weight: bold;
   }
 }
 
-.reply:not(.op) {
-  background-color: @text-bg;
-  margin: @default-padding;
-  margin-right: 0;
-  padding: @default-padding/2 @default-padding @default-padding/1.2 @default-padding;
-  border-radius: @default-border-radius;
-  .outer-glow;
+.post {
+  margin-bottom: @default-padding;
+  max-width: 65em;
+
+  > .indicator {
+    color: @bg-darker;
+    font-weight: bold;
+    float: left;
+    margin-right: @default-padding/2;
+  }
+
+  > .body {
+    display: table;
+    border-radius: @default-border-radius;
+
+    > .content {
+      min-width: 20em;
+    }
+  }
+
+  &:first-of-type {
+    > .body {
+      padding: @default-padding/4 @default-padding/2;
+
+      > .content {
+        margin: @default-padding 0 @default-padding/2 0;
+      }
+    }
+  }
+
+  &:not(:first-of-type) {
+    > .body {
+      padding: @default-padding/2 @default-padding;
+      background-color: @text-bg;
+      .outer-glow;
+
+      img {
+        margin-right: @default-padding*2;
+      }
+
+      > .content {
+        padding: @default-padding;
+        padding-left: @default-padding*2;
+      }
+    }
+  }
 
   &:last-child {
     margin-bottom: 0;
   }
-}
-
-.reply-link {
-  font-weight: bold;
 }
