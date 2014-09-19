@@ -2,8 +2,10 @@ package repositories
 
 import entities.Thread
 import scala.concurrent.Future
-import reactivemongo.bson.{BSONValue, BSONObjectID, BSONDocument}
-import reactivemongo.core.commands.LastError
+import scala.concurrent.ExecutionContext.Implicits.global
+import reactivemongo.bson.{BSONInteger, BSONArray, BSONObjectID, BSONDocument}
+import reactivemongo.core.commands._
+import reactivemongo.core.commands.Unwind
 
 trait ThreadRepositoryComponent {
 
@@ -12,10 +14,9 @@ trait ThreadRepositoryComponent {
   trait ThreadRepository extends MongoRepository {
     type A = Thread
 
-    def add(boardName: String, thread: Thread): Future[LastError]
+    def findByBoardNameAndNo(boardName: String, no: Int): Future[Option[Thread]]
 
-    def setOpFilenames(boardName: String, threadId: Option[BSONObjectID], fileName: String, thumbnailName: String)
-      : Future[LastError]
+    def add(boardName: String, thread: Thread): Future[LastError]
   }
 
 }
@@ -28,14 +29,26 @@ trait ThreadRepositoryComponentImpl extends ThreadRepositoryComponent {
     protected val collectionName = "boards"
     protected val bsonDocumentHandler = Thread.threadBSONHandler
 
-    def add(boardName: String, thread: Thread): Future[LastError]
+    def add(boardName: String, thread: Thread)
       = update(BSONDocument("name" -> boardName),
                BSONDocument("$push" -> BSONDocument("threads" -> thread)))
 
-    def setOpFilenames(boardName: String, threadId: Option[BSONObjectID], fileName: String, thumbnailName: String)
-      = update(BSONDocument("name" -> boardName, "threads._id" -> threadId.get),
-               BSONDocument("$set" -> BSONDocument("threads.$.op.fileName" -> fileName,
-                                                   "threads.$.op.thumbnailName" -> thumbnailName)))
+    // TODO: Perhaps abstract this out
+    def findByBoardNameAndNo(boardName: String, no: Int) = {
+      val command = Aggregate("boards", Seq(
+        Unwind("threads"),
+        Match(BSONDocument("name" -> boardName, "threads.op.no" -> no)),
+        Project("threads" -> BSONInteger(1))
+      ))
+
+      (db.command(command) map { resultDocumentStream =>
+        resultDocumentStream.toSeq map { resultDocument =>
+          resultDocument.getAs[BSONDocument]("threads") map { threadDocument =>
+            bsonDocumentHandler read threadDocument
+          }
+        }
+      }) map (_.head)
+    }
   }
 
 }

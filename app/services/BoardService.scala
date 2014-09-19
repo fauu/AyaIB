@@ -10,7 +10,7 @@ import forms.PostForm
 import play.api.libs.concurrent.Execution.Implicits._
 import reactivemongo.api.gridfs.DefaultFileToSave
 import reactivemongo.bson.BSONObjectID
-import repositories.{BoardRepositoryComponent, FileRepositoryComponent, ThreadRepositoryComponent}
+import repositories.{PostRepositoryComponent, BoardRepositoryComponent, FileRepositoryComponent, ThreadRepositoryComponent}
 import utils.Utils
 import wrappers.FileWrapper
 import java.io.File
@@ -23,8 +23,12 @@ trait BoardServiceComponent {
   trait BoardService {
     def listBoards: Future[List[entities.Board]]
     def findBoardByName(name: String): Future[Option[Board]]
-    def addThread(boardName: String, opPostData: PostForm, fileWrapper: FileWrapper): Future[Try[Int]]
+    def addPost(boardName: String,
+                threadNoOption: Option[Int] = None,
+                postData: PostForm,
+                fileWrapperOption: Option[FileWrapper]): Future[Try[Int]]
     def findBoardLastPostNo(name: String): Future[Option[Int]]
+    def findBoardWithSingleThread(boardName: String, threadNo: Int): Future[Try[(Board, Thread)]]
   }
 
 }
@@ -32,6 +36,7 @@ trait BoardServiceComponent {
 trait BoardServiceComponentImpl extends BoardServiceComponent {
   this: BoardRepositoryComponent
         with ThreadRepositoryComponent
+        with PostRepositoryComponent
         with FileRepositoryComponent =>
 
   def boardService = new BoardServiceImpl
@@ -91,53 +96,79 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
       name + "." + extension
     }
 
-    def addThread(boardName: String, opPostData: PostForm, fileWrapper: FileWrapper) =
+    def addPost(boardName: String, threadNoOption: Option[Int] = None, postData: PostForm, fileWrapperOption: Option[FileWrapper]) = {
+      val futureFileInfo = fileWrapperOption match {
+        case Some(fileWrapper) =>
+          for {
+            Some(board) <- boardRepository.findByNameSimple(boardName)
+
+            _ <- fileValidity(board.config, fileWrapper)
+
+            (mainWrapper: FileWrapper, thumbWrapper: FileWrapper, fileMetadata: FileMetadata)
+              <- processFile(fileWrapper)
+
+            timestamp = System.currentTimeMillis()
+
+            thumbFileToSave = DefaultFileToSave(filename = generateFilename(fileWrapper, timestamp, thumbnail = true),
+                                                contentType = thumbWrapper.contentType)
+
+            mainFileToSave = DefaultFileToSave(filename = generateFilename(fileWrapper, timestamp),
+                                               contentType = fileWrapper.contentType)
+
+            _ <- fileRepository saveThumbnail (thumbWrapper.file, thumbFileToSave)
+
+            _ <- fileRepository save (fileWrapper.file, mainFileToSave)
+          } yield (Some(mainFileToSave.filename), Some(fileMetadata), Some(thumbFileToSave.filename))
+        case _ => Future.successful((None, None, None))
+      }
+
       (for {
-        Some(board) <- boardRepository.findByNameSimple(boardName)
-
-        _ <- fileValidity(board.config, fileWrapper)
-
-        (mainWrapper: FileWrapper, thumbWrapper: FileWrapper, fileMetadata: FileMetadata)
-          <- processFile(fileWrapper)
-
-        timestamp = System.currentTimeMillis()
-
-        thumbFileToSave = DefaultFileToSave(filename = generateFilename(fileWrapper, timestamp, thumbnail = true),
-                                            contentType = thumbWrapper.contentType)
-
-        mainFileToSave = DefaultFileToSave(filename = generateFilename(fileWrapper, timestamp),
-                                           contentType = fileWrapper.contentType)
-
-
-        _ <- fileRepository.saveThumbnail(thumbWrapper.file, thumbFileToSave)
-
-        _ <- fileRepository.save(fileWrapper.file, mainFileToSave)
+        lastPostNoOption <- findBoardLastPostNo(boardName)
 
         _ <- boardRepository.incrementLastPostNo(boardName)
 
         Some(lastPostNo) <- findBoardLastPostNo(boardName)
 
-        newThread = Thread(_id = Some(BSONObjectID.generate),
-                           op = Post(no = lastPostNo, content = opPostData.content, fileMetadata = Some(fileMetadata)),
-                           replies = List[Post]())
+        (fileNameOption: Option[String], fileMetadataOption: Option[FileMetadata], thumbnailNameOption: Option[String])
+          <- futureFileInfo
 
-        _ <- threadRepository.add(boardName, newThread)
+        newPost <- Future.successful {
+          Post(no = lastPostNo,
+               content = postData.content,
+               fileName = fileNameOption,
+               fileMetadata = fileMetadataOption,
+               thumbnailName = thumbnailNameOption)
+        }
 
-        _ <- threadRepository.setOpFilenames(boardName, newThread._id, mainFileToSave.filename, thumbFileToSave.filename)
+        _ <- threadNoOption match {
+          case Some(threadNo) => postRepository.add(boardName, threadNo, newPost)
+          case _ => threadRepository.add(boardName, Thread(_id = Some(BSONObjectID.generate), op = newPost))
+        }
       } yield {
-        Success(newThread.op.no)
+        Success(newPost.no)
       }) recover {
         case (ex: IncorrectInputException) => Failure(ex)
-        case (ex: Exception) => Failure {
-          new PersistenceException(s"Cannot save thread to the database: $ex")
-        }
+        case (ex: Exception) => Failure(new PersistenceException(s"Cannot save thread to the database: $ex"))
       }
+    }
 
     def findBoardLastPostNo(name: String) =
       boardRepository.findByNameSimple(name) map {
         case Some(board) => Some(board.lastPostNo)
         case _ => None
       }
+
+    def findBoardWithSingleThread(boardName: String, threadNo: Int) = {
+      (for {
+        boardOption <- boardRepository.findByNameSimple(boardName)
+        threadOption <- threadRepository.findByBoardNameAndNo(boardName, threadNo)
+      } yield (boardOption, threadOption) match {
+        case (Some(board), Some(thread)) => Success((board, thread))
+        case _ => Failure(new PersistenceException())
+      }) recover {
+        case (ex: Exception) => Failure(new PersistenceException(s"Cannot retrieve board with single thread: $ex"))
+      }
+    }
   }
 
 }

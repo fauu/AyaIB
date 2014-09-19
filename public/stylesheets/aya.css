@@ -178,7 +178,6 @@ h2 {
 }
 .reply.op > .info {
   display: block;
-  vertical-align: top;
 }
 .reply.op > .content {
   display: block;

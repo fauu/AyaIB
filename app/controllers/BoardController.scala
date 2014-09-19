@@ -13,6 +13,8 @@ import reactivemongo.bson.BSONObjectID
 import scala.util.{Failure, Success}
 import exceptions.IncorrectInputException
 import play.api.Logger
+import play.api.libs.Files.TemporaryFile
+import play.api.mvc.MultipartFormData.FilePart
 
 object BoardController extends Controller {
 
@@ -24,32 +26,38 @@ object BoardController extends Controller {
 
   def show(name: String) = Action.async { implicit request =>
     boardService.findBoardByName(name) map {
-      case Some(board) => Ok(views.html.board(board, PostForm.get))
+      case Some(board) => Ok(views.html.board(board = board, postForm = PostForm.get))
       case _ => NotFound(views.html.notFound())
     }
   }
 
+  def showThread(boardName: String, no: Int) = Action.async { implicit request =>
+    boardService.findBoardWithSingleThread(boardName = boardName, threadNo = no) map {
+      case Success((board, thread)) => Ok(views.html.board(board, Some(thread), PostForm.get))
+      case Failure(ex) =>  NotFound(views.html.notFound())
+    }
+  }
+
   def createThread(boardName: String) = Action.async(parse.multipartFormData) { implicit request =>
-    val postData = PostForm.get.bindFromRequest.fold(
-      formWithErrors => None,
-      postData => Some(postData)
-    )
+    val postDataOption = PostForm.get.bindFromRequest fold (formWithErrors => None, postData => Some(postData))
 
     request.body.file("file") map { file =>
-      postData map { postData =>
+      postDataOption map { postData =>
         val futureNewThreadNoOption
-            = boardService.addThread(boardName,
-                                     opPostData = postData,
-                                     new FileWrapper(file.ref.file, file.filename, file.contentType))
+            = boardService.addPost(boardName = boardName,
+                                   postData = postData,
+                                   fileWrapperOption = Some(new FileWrapper(file.ref.file,
+                                                                            file.filename,
+                                                                            file.contentType)))
 
         futureNewThreadNoOption map {
-          case Success(newThreadNo) => Redirect(routes.BoardController.show(boardName))
+          case Success(newThreadNo) => Redirect(routes.BoardController.showThread(boardName, newThreadNo))
 
           case Failure(ex: IncorrectInputException)
             => Redirect(routes.BoardController.show(boardName)).flashing("error" -> ex.getMessage)
 
           case Failure(ex) => {
-            Logger.debug(s"Cannot add new thread: ${ex.getMessage}")
+            Logger.error(s"Cannot add new thread: $ex")
             Redirect(routes.BoardController.show(boardName)).flashing("failure" -> "")
           }
         }
@@ -58,6 +66,33 @@ object BoardController extends Controller {
       }
     } getOrElse Future.successful {
       Redirect(routes.BoardController.show(boardName)).flashing("error" -> "Please pick a file")
+    }
+  }
+
+  def postInThread(boardName: String, threadNo: Int) = Action.async(parse.multipartFormData) { implicit request =>
+    val postData = PostForm.get.bindFromRequest fold (formWithErrors => None, postData => Some(postData))
+
+    postData map { postData =>
+      val fileWrapperOption: Option[FileWrapper] = request.body.file("file") match {
+        case Some(file: FilePart[TemporaryFile]) => Some(new FileWrapper(file.ref.file, file.filename, file.contentType))
+        case _ => None
+      }
+
+      val futureNewPostNoOption = boardService.addPost(boardName, Some(threadNo), postData, fileWrapperOption)
+
+      futureNewPostNoOption map {
+        case Success(newPostNo) => Redirect(routes.BoardController.showThread(boardName, threadNo) + "#" + newPostNo)
+
+        case Failure(ex: IncorrectInputException)
+          => Redirect(routes.BoardController.show(boardName)).flashing("error" -> ex.getMessage)
+
+        case Failure(ex) => {
+          Logger.error(s"Cannot add new post: $ex")
+          Redirect(routes.BoardController.show(boardName)).flashing("failure" -> "")
+        }
+      }
+    } getOrElse Future.successful {
+      Redirect(routes.BoardController.show(boardName)).flashing("error" -> "Please fill all required fields")
     }
   }
 

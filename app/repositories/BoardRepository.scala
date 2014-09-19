@@ -15,6 +15,7 @@ trait BoardRepositoryComponent {
     def findAllSimple: Future[List[Board]]
     def findByName(name: String): Future[Option[Board]]
     def findByNameSimple(name: String): Future[Option[Board]]
+    def findByNameWithSingleThread(name: String, threadNo: Int): Future[Option[Board]]
     def incrementLastPostNo(name: String): Future[LastError]
   }
 
@@ -34,8 +35,12 @@ trait BoardRepositoryComponentImpl extends BoardRepositoryComponent {
 
     def findByNameSimple(name: String) = queryOne(BSONDocument("name" -> name), BSONDocument("threads" -> 0))
 
+    def findByNameWithSingleThread(name: String, threadNo: Int)
+      = queryOne(BSONDocument("threads.op.no" -> threadNo), BSONDocument("threads.$nin" -> true))
+
     def incrementLastPostNo(name: String)
       = update(BSONDocument("name" -> name), BSONDocument("$inc" -> BSONDocument("lastPostNo" -> 1)))
+
   }
 
 }

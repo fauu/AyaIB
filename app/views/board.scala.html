@@ -1,4 +1,4 @@
-@(board: entities.Board, postForm: Form[forms.PostForm])(implicit flash: Flash)
+@(board: entities.Board, threadOption: Option[entities.Thread] = None, postForm: Form[forms.PostForm])(implicit flash: Flash)
 
 @import helper._
 
@@ -17,44 +17,27 @@
       <h2>@(board.slashizedName + " - " + board.fullName)</h2>
     </header>
     <section id="threads">
-      @for(thread <- board.threads.get) {
-        <article class="thread">
-            @defining(thread.op) { op =>
-             <section class="file">
-               <aside class="info">
-                 @defining(op.fileMetadata.get) { metadata =>
-                   File: @metadata.originalName
-                 (@metadata.size · @metadata.dimensions)
-                 }
-               </aside>
-               <a href="@routes.FileController.get(name = op.fileName.get, thumbnail = false)">
-                 <img src="@routes.FileController.get(name = op.thumbnailName.get, thumbnail = true)" />
-               </a>
-             </section>
-          <article class="reply op">
-            <section class="info">
-              <strong>Anonymous</strong> · #@op.no
-            </section>
-            <section class="content">
-              @op.content
-            </section>
-            }
-          </article>
-          @for(reply <- thread.replies) {
-            <article class="reply">
-              reply
-            </article>
-          }
-        </article>
+    @threadOption match {
+      case Some(thread) => { @views.html.thread(thread) }
+      case _ => {
+        @for(thread <- board.threads.get) {
+          @views.html.thread(thread)
+        }
       }
+    }
     </section>
   </main>
 
   <aside id="post-form-container">
-    @form(action = routes.BoardController.createThread(board.name), 'enctype -> "multipart/form-data") {
-      @textarea(postForm("content"), '_showConstraints -> false, 'placeholder -> "Message")
-      @inputFile(postForm("file"))
-      <button type="submit">Create thread</button>
+    @defining(threadOption match {
+      case Some(thread) => (routes.BoardController.postInThread(board.name, thread.op.no), "Reply")
+      case _ => (routes.BoardController.createThread(board.name), "Create thread")
+    }) { case (actionUrl, actionName) =>
+      @form(action = actionUrl, 'enctype -> "multipart/form-data") {
+        @textarea(postForm("content"), '_showConstraints -> false, 'placeholder -> "Message")
+        @inputFile(postForm("file"))
+        <button type="submit">@actionName</button>
+      }
     }
   </aside>
 
