@@ -1,6 +1,7 @@
 package utils
 
 import java.text.DecimalFormat
+import com.github.nscala_time.time.Imports.{DateTime, DateTimeFormat}
 
 object Utils {
 
@@ -21,5 +22,8 @@ object Utils {
     }).head
 
   def contentTypeToExtension(contentType: String): Option[String] = contentTypesExtensions.get(contentType)
+
+  def formatDate(date: DateTime, pattern: String = "yyyy-MM-dd H:mm:ss") =
+    DateTimeFormat.forPattern(pattern) print date
 
 }

@@ -17,9 +17,13 @@ trait MongoRepository extends ImplicitBSONHandlers {
   type A <: MongoEntity
 
   protected val db = ReactiveMongoPlugin.db
+
   protected val collectionName: String
+
   protected def collection = db[BSONCollection](collectionName)
+
   protected val awaitJournalCommit: GetLastError = GetLastError(j = true)
+
   implicit protected val bsonDocumentHandler: BSONDocumentReader[A] with BSONDocumentWriter[A]
                                                                     with BSONHandler[BSONDocument, A]
 

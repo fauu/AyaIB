@@ -23,6 +23,7 @@
 img {
   float: left;
   margin: 0 @default-padding @default-padding 0;
+  .outer-glow;
 }
 
 .poster-name {
@@ -37,8 +38,25 @@ img {
   border-radius: @default-border-radius;
   .outer-glow;
 
+  > span, a {
+    vertical-align: 1px;
+  }
+
+  > .subject {
+    font-weight: bold;
+  }
+
   > .reply-link {
     font-weight: bold;
+    color: @text-bg;
+    background-color: @link;
+    padding: @default-padding/4 @default-padding/2;
+    border-radius: @default-border-radius;
+    margin-left: @default-padding/2;
+
+    &:hover {
+      background-color: @link-hover;
+    }
   }
 }
 

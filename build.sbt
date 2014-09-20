@@ -15,7 +15,8 @@ libraryDependencies ++= Seq(
   jdbc,
   "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.akka23-SNAPSHOT",
   "com.twitter" %% "util-core" % "6.20.0",
-  "com.sksamuel.scrimage" %% "scrimage-core" % "1.4.1"
+  "com.sksamuel.scrimage" %% "scrimage-core" % "1.4.1",
+  "com.github.nscala-time" %% "nscala-time" % "1.4.0"
 )
 
 lazy val compileThemes = taskKey[Unit]("Compiles LESS entry points of all themes")

@@ -1,15 +1,28 @@
 @(board: entities.Board, thread: entities.Thread, singleThreadView: Boolean = false)
 
+@import utils.Utils
+
 @postHeader(post: entities.Post, isOp: Boolean) = {
   <header>
+    @post.subject match {
+      case Some(subject) => {
+        <span class="subject">
+          @subject
+        </span> ·
+      }
+      case None => { }
+    }
     <span class="poster-name">
       Anonymous
     </span> ·
+    <span class="date">
+      @Utils.formatDate(post.date) ·
+    </span>
     <a class="no" href="@routes.BoardController.showThread(board.name, thread.op.no)#post-@post.no">
       #@post.no
     </a>
     @if(isOp && !singleThreadView) {
-      · <a class="reply-link" href="@routes.BoardController.showThread(board.name, thread.op.no)">Reply</a>
+      <a class="reply-link" href="@routes.BoardController.showThread(board.name, thread.op.no)">Reply</a>
     }
   </header>
 }

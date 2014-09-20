@@ -182,6 +182,7 @@ h2 > a {
 img {
   float: left;
   margin: 0 10px 10px 0;
+  box-shadow: 0 0 10px #bed9da;
 }
 .poster-name {
   font-weight: bold;
@@ -194,8 +195,23 @@ img {
   border-radius: 5px;
   box-shadow: 0 0 10px #bed9da;
 }
+.thread > header > span,
+.thread > header a {
+  vertical-align: 1px;
+}
+.thread > header > .subject {
+  font-weight: bold;
+}
 .thread > header > .reply-link {
   font-weight: bold;
+  color: #ffffff;
+  background-color: #ff9f00;
+  padding: 2.5px 5px;
+  border-radius: 5px;
+  margin-left: 5px;
+}
+.thread > header > .reply-link:hover {
+  background-color: #ffb233;
 }
 .post {
   margin-bottom: 10px;
@@ -251,14 +267,17 @@ img {
 #post-form-container > form dt {
   display: none;
 }
-#post-form-container > form input {
-  width: 100%;
-}
+#post-form-container > form input,
 #post-form-container > form textarea {
   width: 100%;
   box-sizing: border-box;
-  height: 120px;
   padding: 5px;
+}
+#post-form-container > form input {
+  margin-bottom: 2px;
+}
+#post-form-container > form textarea {
+  height: 120px;
 }
 #post-form-container > form button {
   padding: 5px 3px;

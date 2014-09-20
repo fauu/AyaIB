@@ -17,6 +17,7 @@ import reactivemongo.bson.BSONObjectID
 import repositories.{BoardRepositoryComponent, FileRepositoryComponent, PostRepositoryComponent, ThreadRepositoryComponent}
 import utils.Utils
 import wrappers.FileWrapper
+import org.joda.time.DateTime
 
 trait BoardServiceComponent {
 
@@ -147,7 +148,9 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
 
         newPost <- Future.successful {
           Post(no = lastPostNo,
+               subject = postData.subject,
                content = postData.content,
+               date = DateTime.now,
                fileName = fileNameOption,
                fileMetadata = fileMetadataOption,
                thumbnailName = thumbnailNameOption)

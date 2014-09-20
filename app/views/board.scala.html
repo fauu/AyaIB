@@ -2,7 +2,7 @@
 
 @import helper._
 
-@main(board.slashizedName + " - " + board.fullName) {
+@main("%s - %s".format(board.slashizedName, board.fullName)) {
 
   @flash.get("error").map { message =>
     <div>@message</div>
@@ -16,7 +16,7 @@
     <header>
       <h2>
         <a href="@routes.BoardController.show(board.name)">
-          @(board.slashizedName + " - " + board.fullName)
+          @("%s - %s".format(board.slashizedName, board.fullName))
         </a>
       </h2>
     </header>
@@ -38,6 +38,9 @@
       case _ => (routes.BoardController.createThread(board.name), "Create thread")
     }) { case (actionUrl, actionName) =>
       @form(action = actionUrl, 'enctype -> "multipart/form-data") {
+        @if(actionName == "Create thread") {
+          @inputText(postForm("subject"), '_showConstraints -> false, 'placeholder -> "Subject")
+        }
         @textarea(postForm("content"), '_showConstraints -> false, 'placeholder -> "Message")
         @inputFile(postForm("file"))
         <button type="submit">@actionName</button>

@@ -4,13 +4,15 @@ import play.api.data._
 import play.api.data.Forms._
 
 case class PostForm(
-  content: String
+  content: String,
+  subject: Option[String]
 )
 
 object PostForm {
 
   def get = Form(mapping(
-      "content" -> nonEmptyText(maxLength = 1800)
+    "content" -> nonEmptyText(maxLength = 1500),
+    "subject" -> optional(nonEmptyText(maxLength = 40))
   )(PostForm.apply)(PostForm.unapply))
 
 }
