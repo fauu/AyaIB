@@ -11,7 +11,7 @@ object FileController extends Controller {
   val fileService = Context.fileService
 
   def get(name: String, thumbnail: Boolean) = Action.async {
-    fileService.retrieveByName(name, thumbnail) map {
+    fileService findByName (name, thumbnail) map {
       case Some((file, enumerator)) =>
         Result(
           header = ResponseHeader(OK, Map(

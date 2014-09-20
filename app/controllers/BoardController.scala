@@ -13,6 +13,7 @@ import context.Context
 import exceptions.IncorrectInputException
 import forms.PostForm
 import wrappers.FileWrapper
+import entities.Thread
 
 object BoardController extends Controller {
 
@@ -23,16 +24,21 @@ object BoardController extends Controller {
   }
 
   def show(name: String) = Action.async { implicit request =>
-    boardService.findBoardByName(name) map {
-      case Some(board) => Ok(views.html.board(board = board, postForm = PostForm.get))
+    boardService.findBoardWithAllThreads(name) map {
+      case Success((board, threads)) => Ok(views.html.board(board = board, threads = threads, postForm = PostForm.get))
       case _ => NotFound(views.html.notFound())
     }
   }
 
   def showThread(boardName: String, no: Int) = Action.async { implicit request =>
-    boardService.findBoardWithSingleThread(boardName = boardName, threadNo = no) map {
-      case Success((board, thread)) => Ok(views.html.board(board, Some(thread), PostForm.get))
-      case Failure(ex) =>  NotFound(views.html.notFound())
+    boardService.findBoardWithThread(boardName, no) map {
+      case Success((board, thread)) =>
+        Ok(views.html.board(board = board,
+                            threads = List[Thread](thread),
+                            singleThreadView = true,
+                            postForm = PostForm.get))
+      case Failure(ex) =>
+        NotFound(views.html.notFound())
     }
   }
 
@@ -72,17 +78,19 @@ object BoardController extends Controller {
 
     postData map { postData =>
       val fileWrapperOption: Option[FileWrapper] = request.body.file("file") match {
-        case Some(file: FilePart[TemporaryFile]) => Some(new FileWrapper(file.ref.file, file.filename, file.contentType))
+        case Some(file: FilePart[TemporaryFile]) =>
+          Some(new FileWrapper(file.ref.file, file.filename, file.contentType))
         case _ => None
       }
 
       val futureNewPostNoOption = boardService.addPost(boardName, Some(threadNo), postData, fileWrapperOption)
 
       futureNewPostNoOption map {
-        case Success(newPostNo) => Redirect(routes.BoardController.showThread(boardName, threadNo) + "#post-" + newPostNo)
+        case Success(newPostNo) =>
+          Redirect(routes.BoardController.showThread(boardName, threadNo) + "#post-" + newPostNo)
 
-        case Failure(ex: IncorrectInputException)
-          => Redirect(routes.BoardController.show(boardName)).flashing("error" -> ex.getMessage)
+        case Failure(ex: IncorrectInputException) =>
+          Redirect(routes.BoardController.show(boardName)).flashing("error" -> ex.getMessage)
 
         case Failure(ex) => {
           Logger.error(s"Cannot add new post: $ex")

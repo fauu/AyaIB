@@ -15,7 +15,7 @@ trait FileServiceComponent {
 
   trait FileService {
 
-    def retrieveByName(name: String, thumbnail: Boolean): Future[Option[(ReadFile[BSONValue], Enumerator[Array[Byte]])]]
+    def findByName(name: String, thumbnail: Boolean): Future[Option[(ReadFile[BSONValue], Enumerator[Array[Byte]])]]
 
   }
 
@@ -28,7 +28,7 @@ trait FileServiceComponentImpl extends FileServiceComponent {
 
   class FileServiceImpl extends FileService {
 
-    def retrieveByName(name: String, thumbnail: Boolean) = fileRepository.retrieveByName(name, thumbnail)
+    def findByName(name: String, thumbnail: Boolean) = fileRepository.findOneByName(name, thumbnail)
 
   }
 

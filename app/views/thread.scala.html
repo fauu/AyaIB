@@ -13,7 +13,12 @@
       case None => { }
     }
     <span class="poster-name">
-      Anonymous
+      @post.email match {
+        case Some(email) => {
+          <a href="mailto:@email">Anonymous</a>
+        }
+        case None => { Anonymous }
+      }
     </span> ·
     <span class="date">
       @Utils.formatDate(post.date) ·

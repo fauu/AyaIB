@@ -14,13 +14,9 @@ trait BoardRepositoryComponent {
 
     type A = Board
 
-    def findAllSimple: Future[List[Board]]
+    def findAll: Future[List[Board]]
 
-    def findByName(name: String): Future[Option[Board]]
-
-    def findByNameSimple(name: String): Future[Option[Board]]
-
-    def findByNameWithSingleThread(name: String, threadNo: Int): Future[Option[Board]]
+    def findOneByName(name: String): Future[Option[Board]]
 
     def incrementLastPostNo(name: String): Future[LastError]
 
@@ -37,17 +33,12 @@ trait BoardRepositoryComponentImpl extends BoardRepositoryComponent {
     protected val collectionName = "boards"
     protected val bsonDocumentHandler = Board.boardBSONHandler
 
-    def findAllSimple = query(filter = BSONDocument("threads" -> 0))
+    def findAll = mongoFind()
 
-    def findByName(name: String) = queryOne(BSONDocument("name" -> name))
-
-    def findByNameSimple(name: String) = queryOne(BSONDocument("name" -> name), BSONDocument("threads" -> 0))
-
-    def findByNameWithSingleThread(name: String, threadNo: Int) =
-      queryOne(BSONDocument("threads.op.no" -> threadNo), BSONDocument("threads.$nin" -> true))
+    def findOneByName(name: String) = mongoFindOne(BSONDocument("name" -> name))
 
     def incrementLastPostNo(name: String) =
-      update(BSONDocument("name" -> name), BSONDocument("$inc" -> BSONDocument("lastPostNo" -> 1)))
+      mongoUpdate(BSONDocument("name" -> name), BSONDocument("$inc" -> BSONDocument("lastPostNo" -> 1)))
 
   }
 

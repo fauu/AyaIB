@@ -1,4 +1,7 @@
-@(board: entities.Board, threadOption: Option[entities.Thread] = None, postForm: Form[forms.PostForm])(implicit flash: Flash)
+@(board: entities.Board,
+  threads: List[entities.Thread],
+  singleThreadView: Boolean = false,
+  postForm: Form[forms.PostForm])(implicit flash: Flash)
 
 @import helper._
 
@@ -21,26 +24,24 @@
       </h2>
     </header>
     <section id="threads">
-    @threadOption match {
-      case Some(thread) => { @views.html.thread(board, thread, singleThreadView = true) }
-      case _ => {
-        @for(thread <- board.threads.get) {
-          @views.html.thread(board, thread)
-        }
-      }
+    @if(singleThreadView) {
+      @views.html.thread(board, threads.head, singleThreadView = true)
+    } else {
+      @for(thread <- threads) { @views.html.thread(board, thread) }
     }
     </section>
   </main>
 
   <aside id="post-form-container">
-    @defining(threadOption match {
-      case Some(thread) => (routes.BoardController.postInThread(board.name, thread.op.no), "Reply")
-      case _ => (routes.BoardController.createThread(board.name), "Create thread")
-    }) { case (actionUrl, actionName) =>
+    @defining(
+      if(singleThreadView) (routes.BoardController.postInThread(board.name, threads.head.op.no), "Reply")
+      else (routes.BoardController.createThread(board.name), "Create thread")
+    ) { case (actionUrl, actionName) =>
       @form(action = actionUrl, 'enctype -> "multipart/form-data") {
         @if(actionName == "Create thread") {
           @inputText(postForm("subject"), '_showConstraints -> false, 'placeholder -> "Subject")
         }
+        @inputText(postForm("email"), '_showConstraints -> false, 'placeholder -> "E-mail")
         @textarea(postForm("content"), '_showConstraints -> false, 'placeholder -> "Message")
         @inputFile(postForm("file"))
         <button type="submit">@actionName</button>

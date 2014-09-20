@@ -195,10 +195,6 @@ img {
   border-radius: 5px;
   box-shadow: 0 0 10px #bed9da;
 }
-.thread > header > span,
-.thread > header a {
-  vertical-align: 1px;
-}
 .thread > header > .subject {
   font-weight: bold;
 }

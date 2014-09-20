@@ -1,11 +1,11 @@
 package repositories
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
-import entities.Thread
-import reactivemongo.bson.{BSONDocument, BSONInteger}
+import entities.{Post, Board, Thread}
+import reactivemongo.bson.BSONDocument
 import reactivemongo.core.commands._
+import com.github.nscala_time.time.Imports.DateTime
 
 trait ThreadRepositoryComponent {
 
@@ -15,9 +15,15 @@ trait ThreadRepositoryComponent {
 
     type A = Thread
 
-    def findByBoardNameAndNo(boardName: String, no: Int): Future[Option[Thread]]
+    def add(board: Board, thread: Thread): Future[LastError]
 
-    def add(boardName: String, thread: Thread): Future[LastError]
+    def addReply(board: Board, thread: Thread, post: Post): Future[LastError]
+
+    def findByBoard(board: Board): Future[List[Thread]]
+
+    def findOneByBoardAndNo(board: Board, no: Int): Future[Option[Thread]]
+
+    def updateBumpDate(board: Board, no: Int, date: DateTime): Future[LastError]
 
   }
 
@@ -29,28 +35,24 @@ trait ThreadRepositoryComponentImpl extends ThreadRepositoryComponent {
 
   class ThreadRepositoryImpl extends ThreadRepository {
 
-    protected val collectionName = "boards"
+    protected val collectionName = "threads"
     protected val bsonDocumentHandler = Thread.threadBSONHandler
 
-    def add(boardName: String, thread: Thread) =
-      update(BSONDocument("name" -> boardName),
-             BSONDocument("$push" -> BSONDocument("threads" -> thread)))
+    def add(board: Board, thread: Thread) = mongoSave(thread.copy(_board_id = board._id))
 
-    // TODO: Perhaps abstract this out
-    def findByBoardNameAndNo(boardName: String, no: Int) = {
-      val command =
-        Aggregate("boards", Seq(
-          Unwind("threads"),
-          Match(BSONDocument("name" -> boardName, "threads.op.no" -> no)),
-          Project("threads" -> BSONInteger(1))
-        ))
+    def addReply(board: Board, thread: Thread, post: Post) =
+      mongoUpdate(BSONDocument("_board_id" -> board._id.get, "op.no" -> thread.op.no),
+                  BSONDocument("$push" -> BSONDocument("replies" -> post)))
 
-      (db.command(command) map { resultDocumentStream =>
-        resultDocumentStream.toSeq map { resultDocument =>
-          resultDocument.getAs[BSONDocument]("threads") map (threadDocument => bsonDocumentHandler read threadDocument)
-        }
-      }) map (_.head)
-    }
+    def findByBoard(board: Board) =
+      mongoFind(BSONDocument("_board_id" -> board._id.get))
+
+    def findOneByBoardAndNo(board: Board, no: Int) =
+      mongoFindOne(BSONDocument("_board_id" -> board._id.get, "op.no" -> no))
+
+    def updateBumpDate(board: Board, no: Int, date: DateTime) =
+      mongoUpdate(BSONDocument("_board_id" -> board._id, "op.no" -> no),
+                  BSONDocument("$set" -> BSONDocument("bumpDate" -> date)))
 
   }
 

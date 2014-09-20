@@ -14,28 +14,31 @@ import exceptions._
 import forms.PostForm
 import reactivemongo.api.gridfs.DefaultFileToSave
 import reactivemongo.bson.BSONObjectID
-import repositories.{BoardRepositoryComponent, FileRepositoryComponent, PostRepositoryComponent, ThreadRepositoryComponent}
+import repositories.{BoardRepositoryComponent, FileRepositoryComponent, ThreadRepositoryComponent}
 import utils.Utils
 import wrappers.FileWrapper
-import org.joda.time.DateTime
+import com.github.nscala_time.time.Imports.DateTime
 
 trait BoardServiceComponent {
 
   def boardService: BoardService
 
   trait BoardService {
-    def listBoards: Future[List[entities.Board]]
-
-    def findBoardByName(name: String): Future[Option[Board]]
 
     def addPost(boardName: String,
                 threadNoOption: Option[Int] = None,
                 postData: PostForm,
                 fileWrapperOption: Option[FileWrapper]): Future[Try[Int]]
 
+    def findAllBoards: Future[List[entities.Board]]
+
+    def findBoard(name: String): Future[Option[Board]]
+
     def findBoardLastPostNo(name: String): Future[Option[Int]]
 
-    def findBoardWithSingleThread(boardName: String, threadNo: Int): Future[Try[(Board, Thread)]]
+    def findBoardWithThread(boardName: String, threadNo: Int): Future[Try[(Board, Thread)]]
+
+    def findBoardWithAllThreads(boardName: String): Future[Try[(Board, List[Thread])]]
 
   }
 
@@ -44,16 +47,11 @@ trait BoardServiceComponent {
 trait BoardServiceComponentImpl extends BoardServiceComponent {
   this: BoardRepositoryComponent
         with ThreadRepositoryComponent
-        with PostRepositoryComponent
         with FileRepositoryComponent =>
 
   def boardService = new BoardServiceImpl
 
   class BoardServiceImpl extends BoardService {
-
-    def listBoards = boardRepository.findAllSimple
-
-    def findBoardByName(name: String) = boardRepository.findByName(name)
 
     private def thumbnailImage(image: AsyncImage): Future[AsyncImage] = {
       val thumbnailMaxDimension = 200
@@ -114,7 +112,7 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
       val futureFileInfo = fileWrapperOption match {
         case Some(fileWrapper) =>
           for {
-            Some(board) <- boardRepository.findByNameSimple(boardName)
+            Some(board) <- boardRepository findOneByName boardName // FIXME: DRY
 
             _ <- fileValidity(board.config, fileWrapper)
 
@@ -129,26 +127,25 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
             mainFileToSave = DefaultFileToSave(filename = generateFilename(fileWrapper, timestamp),
                                                contentType = fileWrapper.contentType)
 
-            _ <- fileRepository saveThumbnail (thumbWrapper.file, thumbFileToSave)
+            _ <- fileRepository add (thumbWrapper.file, thumbFileToSave, thumbnail = true)
 
-            _ <- fileRepository save (fileWrapper.file, mainFileToSave)
+            _ <- fileRepository add (fileWrapper.file, mainFileToSave)
           } yield (Some(mainFileToSave.filename), Some(fileMetadata), Some(thumbFileToSave.filename))
         case _ => Future.successful((None, None, None))
       }
 
       (for {
-        lastPostNoOption <- findBoardLastPostNo(boardName)
+        Some(board) <- boardRepository findOneByName boardName // FIXME: DRY
 
         _ <- boardRepository.incrementLastPostNo(boardName)
-
-        Some(lastPostNo) <- findBoardLastPostNo(boardName)
 
         (fileNameOption: Option[String], fileMetadataOption: Option[FileMetadata], thumbnailNameOption: Option[String])
           <- futureFileInfo
 
         newPost <- Future.successful {
-          Post(no = lastPostNo,
+          Post(no = board.lastPostNo + 1,
                subject = postData.subject,
+               email = postData.email,
                content = postData.content,
                date = DateTime.now,
                fileName = fileNameOption,
@@ -157,32 +154,55 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
         }
 
         _ <- threadNoOption match {
-          case Some(threadNo) => postRepository.add(boardName, threadNo, newPost)
-          case _ => threadRepository.add(boardName, Thread(_id = Some(BSONObjectID.generate), op = newPost))
+          case Some(threadNo) =>
+             threadRepository.findOneByBoardAndNo(board, threadNo) flatMap { // TODO: This is excessive, fix
+               case Some(thread) =>
+                 threadRepository.addReply(board, thread, newPost) flatMap { lastError =>
+                   if (newPost.email.getOrElse("") != "sage")
+                     threadRepository.updateBumpDate(board, threadNo, newPost.date)
+                   else
+                     Future.successful(lastError)
+                 }
+               case _ => Future.failed(new PersistenceException("Cannot add reply: cannot retrieve thread"))
+            }
+          case _ => threadRepository.add(board, Thread(bumpDate = newPost.date, op = newPost))
         }
       } yield {
         Success(newPost.no)
       }) recover {
         case (ex: IncorrectInputException) => Failure(ex)
-        case (ex: Exception) => Failure(new PersistenceException(s"Cannot save thread to the database: $ex"))
+        case (ex: Exception) => Failure(new PersistenceException(s"Cannot save thread: $ex"))
       }
     }
 
+    def findAllBoards = boardRepository.findAll
+
+    def findBoard(name: String) = boardRepository.findOneByName(name)
+
     def findBoardLastPostNo(name: String) =
-      boardRepository.findByNameSimple(name) map {
+      boardRepository.findOneByName(name) map {
         case Some(board) => Some(board.lastPostNo)
         case _ => None
       }
 
-    def findBoardWithSingleThread(boardName: String, threadNo: Int) = {
-      (for {
-        boardOption <- boardRepository.findByNameSimple(boardName)
-        threadOption <- threadRepository.findByBoardNameAndNo(boardName, threadNo)
-      } yield (boardOption, threadOption) match {
-        case (Some(board), Some(thread)) => Success((board, thread))
-        case _ => Failure(new PersistenceException())
-      }) recover {
-        case (ex: Exception) => Failure(new PersistenceException(s"Cannot retrieve board with single thread: $ex"))
+    def findBoardWithThread(boardName: String, threadNo: Int) = {
+      boardRepository.findOneByName(boardName) flatMap {
+        case Some(board) =>
+          threadRepository.findOneByBoardAndNo(board, threadNo) map {
+            case Some(thread) => Success((board, thread))
+            case _ => Failure(new PersistenceException("Cannot retrieve thread"))
+          }
+        case _ => Future.successful(Failure(new PersistenceException("Cannot retrieve board")))
+      }
+    }
+
+    def findBoardWithAllThreads(boardName: String) = {
+      boardRepository.findOneByName(boardName) flatMap {
+        case Some(board) =>
+          threadRepository.findByBoard(board) map { threads =>
+            Success((board, threads))
+          }
+        case _ => Future.successful(Failure(new PersistenceException("Cannot retrieve board")))
       }
     }
 

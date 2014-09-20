@@ -8,7 +8,8 @@ case class Post (
   _id: Option[BSONObjectID] = Some(BSONObjectID.generate),
   no: Int,
   date: DateTime,
-  subject: Option[String],
+  subject: Option[String] = None,
+  email: Option[String] = None,
   content: String,
   fileName: Option[String] = None,
   fileMetadata: Option[FileMetadata] = None,
@@ -25,7 +26,6 @@ object Post {
   implicit object DateTimeWriter extends BSONWriter[DateTime, BSONDateTime] {
     def write(t: DateTime): BSONDateTime = BSONDateTime(t.getMillis)
   }
-
 
   implicit val postBSONHandler = bson.Macros.handler[Post]
 

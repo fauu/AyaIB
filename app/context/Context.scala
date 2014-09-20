@@ -7,7 +7,6 @@ object Context {
 
   val boardServiceComponent = new BoardServiceComponentImpl with BoardRepositoryComponentImpl
                                                             with ThreadRepositoryComponentImpl
-                                                            with PostRepositoryComponentImpl
                                                             with FileRepositoryComponentImpl
 
   val boardService = boardServiceComponent.boardService
