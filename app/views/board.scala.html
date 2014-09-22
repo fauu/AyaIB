@@ -1,7 +1,7 @@
-@(board: entities.Board,
-  threads: List[entities.Thread],
+@(board: models.entities.Board,
+  threads: List[models.entities.Thread],
   singleThreadView: Boolean = false,
-  postForm: Form[forms.PostForm])(implicit flash: Flash)
+  postForm: Form[models.forms.PostForm])(implicit flash: Flash)
 
 @import helper._
 

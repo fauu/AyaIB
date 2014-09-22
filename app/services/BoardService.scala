@@ -9,14 +9,14 @@ import scala.util.{Failure, Success, Try}
 import play.api.libs.concurrent.Execution.Implicits._
 
 import com.sksamuel.scrimage.{AsyncImage, Format}
-import entities._
-import exceptions._
-import forms.PostForm
+import models.entities._
+import utils.exceptions._
+import models.forms.PostForm
 import reactivemongo.api.gridfs.DefaultFileToSave
 import reactivemongo.bson.BSONObjectID
 import repositories.{BoardRepositoryComponent, FileRepositoryComponent, ThreadRepositoryComponent}
 import utils.Utils
-import wrappers.FileWrapper
+import models.wrappers.FileWrapper
 import com.github.nscala_time.time.Imports.DateTime
 
 trait BoardServiceComponent {
@@ -30,7 +30,7 @@ trait BoardServiceComponent {
                 postData: PostForm,
                 fileWrapperOption: Option[FileWrapper]): Future[Try[Int]]
 
-    def findAllBoards: Future[List[entities.Board]]
+    def findAllBoards: Future[List[models.entities.Board]]
 
     def findBoard(name: String): Future[Option[Board]]
 

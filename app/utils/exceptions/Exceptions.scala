@@ -1,4 +1,4 @@
-package exceptions
+package utils.exceptions
 
 class ServiceException(msg: String = "Service exception") extends RuntimeException(msg)
 

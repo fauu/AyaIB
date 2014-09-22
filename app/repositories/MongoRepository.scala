@@ -11,7 +11,7 @@ import play.modules.reactivemongo.json.collection.JSONCollection
 
 import reactivemongo.core.commands.{GetLastError, LastError}
 
-import entities.MongoEntity
+import models.entities.MongoEntity
 
 trait MongoRepository extends ImplicitBSONHandlers {
 

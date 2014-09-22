@@ -1,4 +1,4 @@
-package entities
+package models.entities
 
 import play.api.libs.json.Json
 import play.modules.reactivemongo.json.BSONFormats._

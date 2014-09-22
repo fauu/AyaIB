@@ -1,8 +1,8 @@
-@(board: entities.Board, thread: entities.Thread, singleThreadView: Boolean = false)
+@(board: models.entities.Board, thread: models.entities.Thread, singleThreadView: Boolean = false)
 
 @import utils.Utils
 
-@postHeader(post: entities.Post, isOp: Boolean) = {
+@postHeader(post: models.entities.Post, isOp: Boolean) = {
   <header>
     @post.subject match {
       case Some(subject) => {
@@ -32,7 +32,7 @@
   </header>
 }
 
-@file(post: entities.Post) = {
+@file(post: models.entities.Post) = {
   @defining(post.fileMetadata.get) { metadata =>
     <aside class="file-info">
       <a href="@routes.FileController.get(name = post.fileName.get, thumbnail = false)">@metadata.originalName</a>

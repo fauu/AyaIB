@@ -3,7 +3,7 @@ package context
 import repositories._
 import services._
 
-object Context {
+object AyaIBContext {
 
   val boardServiceComponent = new BoardServiceComponentImpl with BoardRepositoryComponentImpl
                                                             with ThreadRepositoryComponentImpl

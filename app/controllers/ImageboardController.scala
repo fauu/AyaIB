@@ -4,12 +4,12 @@ import play.api.mvc.{Action, Controller}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import context.Context
-import entities.Board
+import context.AyaIBContext
+import models.entities.Board
 
 object ImageboardController extends Controller {
 
-  val boardService = Context.boardService
+  val boardService = AyaIBContext.boardService
 
   def index = Action.async {
     boardService.findAllBoards map {

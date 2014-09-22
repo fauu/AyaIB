@@ -6,7 +6,7 @@ import play.api.libs.json.Json
 
 import reactivemongo.core.commands.LastError
 
-import entities.Board
+import models.entities.Board
 
 trait BoardRepositoryComponent {
 

@@ -4,11 +4,11 @@ import scala.concurrent.ExecutionContext.Implicits._
 
 import play.api.mvc.{Action, Controller, ResponseHeader, Result}
 
-import context.Context
+import context.AyaIBContext
 
 object FileController extends Controller {
 
-  val fileService = Context.fileService
+  val fileService = AyaIBContext.fileService
 
   def get(name: String, thumbnail: Boolean) = Action.async {
     fileService findByName (name, thumbnail) map {

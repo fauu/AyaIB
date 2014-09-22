@@ -9,15 +9,15 @@ import play.api.mvc.{Action, Controller}
 import play.api.mvc.MultipartFormData.FilePart
 
 import ExecutionContext.Implicits.global
-import context.Context
-import exceptions.IncorrectInputException
-import forms.PostForm
-import wrappers.FileWrapper
-import entities.Thread
+import context.AyaIBContext
+import utils.exceptions.IncorrectInputException
+import models.forms.PostForm
+import models.wrappers.FileWrapper
+import models.entities.Thread
 
 object BoardController extends Controller {
 
-  val boardService = Context.boardService
+  val boardService = AyaIBContext.boardService
 
   def fixUrlAndRedirect(name: String) = Action {
     Redirect(routes.BoardController.show(name))

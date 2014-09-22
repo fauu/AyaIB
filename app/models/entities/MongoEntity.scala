@@ -1,4 +1,4 @@
-package entities
+package models.entities
 
 import reactivemongo.bson.BSONObjectID
 

@@ -9,7 +9,7 @@ import reactivemongo.core.commands._
 
 import com.github.nscala_time.time.Imports.DateTime
 
-import entities.{Post, Board, Thread}
+import models.entities.{Post, Board, Thread}
 
 trait ThreadRepositoryComponent {
 
