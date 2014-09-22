@@ -1,0 +1,11 @@
+anonymous=Anonyme
+
+errors.internal=Une erreur interne s'est produite, s'il vous plaît essayez de nouveau
+
+postForm.createThread=Créer un sujet
+postForm.reply=Répondre
+postForm.subject=Sujet
+postForm.email=E-mail
+postForm.content=Message
+
+thread.reply=Répondre

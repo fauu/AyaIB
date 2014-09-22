@@ -199,7 +199,7 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
     def findBoardWithAllThreads(boardName: String) = {
       boardRepository.findOneByName(boardName) flatMap {
         case Some(board) =>
-          threadRepository.findByBoard(board) map { threads =>
+          threadRepository.findByBoardSortedByBumpDateDesc(board) map { threads =>
             Success((board, threads))
           }
         case _ => Future.successful(Failure(new PersistenceException("Cannot retrieve board")))

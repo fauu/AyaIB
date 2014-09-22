@@ -1,7 +1,7 @@
 @(board: models.entities.Board,
   threads: List[models.entities.Thread],
   singleThreadView: Boolean = false,
-  postForm: Form[models.forms.PostForm])(implicit flash: Flash)
+  postForm: Form[models.forms.PostForm])(implicit lang: Lang, flash: Flash)
 
 @import helper._
 
@@ -12,7 +12,7 @@
   }
 
   @flash.get("failure").map { _ =>
-    <div>Internal error has occurred, please try again</div>
+    <div>@Messages("errors.internal")</div>
   }
 
   <main id="board">
@@ -34,15 +34,15 @@
 
   <aside id="post-form-container">
     @defining(
-      if(singleThreadView) (routes.BoardController.postInThread(board.name, threads.head.op.no), "Reply")
-      else (routes.BoardController.createThread(board.name), "Create thread")
+      if(singleThreadView) (routes.BoardController.postInThread(board.name, threads.head.op.no), Messages("postForm.reply"))
+      else (routes.BoardController.createThread(board.name), Messages("postForm.createThread"))
     ) { case (actionUrl, actionName) =>
       @form(action = actionUrl, 'enctype -> "multipart/form-data") {
-        @if(actionName == "Create thread") {
-          @inputText(postForm("subject"), '_showConstraints -> false, 'placeholder -> "Subject")
+        @if(actionName == Messages("postForm.createThread")) { <!--TODO: Check this in a better way-->
+          @inputText(postForm("subject"), '_showConstraints -> false, 'placeholder -> Messages("postForm.subject"))
         }
-        @inputText(postForm("email"), '_showConstraints -> false, 'placeholder -> "E-mail")
-        @textarea(postForm("content"), '_showConstraints -> false, 'placeholder -> "Message")
+        @inputText(postForm("email"), '_showConstraints -> false, 'placeholder -> Messages("postForm.email"))
+        @textarea(postForm("content"), '_showConstraints -> false, 'placeholder -> Messages("postForm.content"))
         @inputFile(postForm("file"))
         <button type="submit">@actionName</button>
       }

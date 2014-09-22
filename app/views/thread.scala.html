@@ -1,4 +1,4 @@
-@(board: models.entities.Board, thread: models.entities.Thread, singleThreadView: Boolean = false)
+@(board: models.entities.Board, thread: models.entities.Thread, singleThreadView: Boolean = false)(implicit lang: Lang)
 
 @import utils.Utils
 
@@ -15,9 +15,9 @@
     <span class="poster-name">
       @post.email match {
         case Some(email) => {
-          <a href="mailto:@email">Anonymous</a>
+          <a href="mailto:@email">@Messages("anonymous")</a>
         }
-        case None => { Anonymous }
+        case None => { @Messages("anonymous") }
       }
     </span> ·
     <span class="date">
@@ -27,7 +27,9 @@
       #@post.no
     </a>
     @if(isOp && !singleThreadView) {
-      <a class="reply-link" href="@routes.BoardController.showThread(board.name, thread.op.no)">Reply</a>
+      <a class="reply-link" href="@routes.BoardController.showThread(board.name, thread.op.no)">
+        @Messages("thread.reply")
+      </a>
     }
   </header>
 }

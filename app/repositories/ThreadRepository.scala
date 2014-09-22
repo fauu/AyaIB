@@ -23,7 +23,7 @@ trait ThreadRepositoryComponent {
 
     def addReply(board: Board, thread: Thread, post: Post): Future[LastError]
 
-    def findByBoard(board: Board): Future[List[Thread]]
+    def findByBoardSortedByBumpDateDesc(board: Board): Future[List[Thread]]
 
     def findOneByBoardAndNo(board: Board, no: Int): Future[Option[Thread]]
 
@@ -48,8 +48,8 @@ trait ThreadRepositoryComponentImpl extends ThreadRepositoryComponent {
       mongoUpdate(Json.obj("_board_id" -> board._id.get, "op.no" -> thread.op.no),
                   Json.obj("$push" -> Json.obj("replies" -> post)))
 
-    def findByBoard(board: Board) =
-      mongoFind(Json.obj("_board_id" -> board._id.get))
+    def findByBoardSortedByBumpDateDesc(board: Board) =
+      mongoFindSorted(Json.obj("_board_id" -> board._id.get), sort = Json.obj("bumpDate" -> -1))
 
     def findOneByBoardAndNo(board: Board, no: Int) =
       mongoFindOne(Json.obj("_board_id" -> board._id.get, "op.no" -> no))

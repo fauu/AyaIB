@@ -28,6 +28,11 @@ trait MongoRepository extends ImplicitBSONHandlers {
   def mongoFind(selector: JsObject = Json.obj(), projection: JsObject = Json.obj()): Future[List[A]] =
     collection.find(selector, projection).cursor[A].collect[List](1000, stopOnError = false)
 
+  def mongoFindSorted(selector: JsObject = Json.obj(),
+                      projection: JsObject = Json.obj(),
+                      sort: JsObject): Future[List[A]] =
+    collection.find(selector, projection).sort(sort).cursor[A].collect[List](1000, stopOnError = false)
+
   def mongoFindOne(selector: JsObject, projection: JsObject = Json.obj()): Future[Option[A]] =
     collection.find(selector, projection).one[A]
 
