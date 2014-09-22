@@ -1,10 +1,12 @@
 package entities
 
-import reactivemongo.bson
+import play.api.libs.json.Json
+import play.modules.reactivemongo.json.BSONFormats._
+
 import reactivemongo.bson.BSONObjectID
 
 case class FileMetadata (
-  _id: Option[BSONObjectID] = None,
+  _id: Option[BSONObjectID] = Some(BSONObjectID.generate),
   originalName: String,
   dimensions: String,
   size: String
@@ -12,6 +14,6 @@ case class FileMetadata (
 
 object FileMetadata {
 
-  implicit val fileMetadataBSONHandler = bson.Macros.handler[FileMetadata]
+  implicit val jsonFormat = Json.format[FileMetadata]
 
 }

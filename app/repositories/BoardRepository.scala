@@ -2,9 +2,11 @@ package repositories
 
 import scala.concurrent.Future
 
-import entities.Board
-import reactivemongo.bson.BSONDocument
+import play.api.libs.json.Json
+
 import reactivemongo.core.commands.LastError
+
+import entities.Board
 
 trait BoardRepositoryComponent {
 
@@ -31,14 +33,14 @@ trait BoardRepositoryComponentImpl extends BoardRepositoryComponent {
   class BoardRepositoryImpl extends BoardRepository {
 
     protected val collectionName = "boards"
-    protected val bsonDocumentHandler = Board.boardBSONHandler
+    protected val jsonFormat = Board.jsonFormat
 
     def findAll = mongoFind()
 
-    def findOneByName(name: String) = mongoFindOne(BSONDocument("name" -> name))
+    def findOneByName(name: String) = mongoFindOne(Json.obj("name" -> name))
 
     def incrementLastPostNo(name: String) =
-      mongoUpdate(BSONDocument("name" -> name), BSONDocument("$inc" -> BSONDocument("lastPostNo" -> 1)))
+      mongoUpdate(Json.obj("name" -> name), Json.obj("$inc" -> Json.obj("lastPostNo" -> 1)))
 
   }
 

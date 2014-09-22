@@ -1,10 +1,12 @@
 package entities
 
-import reactivemongo.bson
+import play.api.libs.json.Json
+import play.modules.reactivemongo.json.BSONFormats._
+
 import reactivemongo.bson.BSONObjectID
 
 case class Board (
-  _id: Option[BSONObjectID] = None,
+  _id: Option[BSONObjectID] = Some(BSONObjectID.generate),
   name: String,
   fullName: String,
   lastPostNo: Int = 0,
@@ -17,6 +19,7 @@ case class Board (
 
 object Board {
 
-  implicit val boardBSONHandler = bson.Macros.handler[Board]
+  implicit val jsonFormat = Json.format[Board]
+  implicit val boardConfigJsonFormat = BoardConfig.jsonFormat
 
 }

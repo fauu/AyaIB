@@ -1,7 +1,10 @@
 package entities
 
-import reactivemongo.bson
-import reactivemongo.bson.{BSONWriter, BSONDateTime, BSONReader, BSONObjectID}
+import play.api.libs.json.Json
+import play.modules.reactivemongo.json.BSONFormats._
+
+import reactivemongo.bson.BSONObjectID
+
 import com.github.nscala_time.time.Imports.DateTime
 
 case class Thread (
@@ -10,19 +13,11 @@ case class Thread (
   bumpDate: DateTime,
   op: Post,
   replies: List[Post] = List[Post]()
-) extends MongoEntity
+) extends MongoEntity { }
 
 object Thread {
 
-  // TODO: Factor this out
-  implicit object DateTimeReader extends BSONReader[BSONDateTime, DateTime] {
-    def read(bson: BSONDateTime): DateTime = new DateTime(bson.value)
-  }
-
-  implicit object DateTimeWriter extends BSONWriter[DateTime, BSONDateTime] {
-    def write(t: DateTime): BSONDateTime = BSONDateTime(t.getMillis)
-  }
-
-  implicit val threadBSONHandler = bson.Macros.handler[Thread]
+  implicit val jsonFormat = Json.format[Thread]
+  implicit val postJsonFormat = Post.jsonFormat
 
 }

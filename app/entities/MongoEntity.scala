@@ -2,8 +2,8 @@ package entities
 
 import reactivemongo.bson.BSONObjectID
 
-trait MongoEntity extends Entity {
+trait MongoEntity {
 
-  def _id: Option[BSONObjectID]
+  val _id: Option[BSONObjectID]
 
 }

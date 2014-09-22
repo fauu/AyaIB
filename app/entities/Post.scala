@@ -1,7 +1,10 @@
 package entities
 
-import reactivemongo.bson
-import reactivemongo.bson.{BSONWriter, BSONDateTime, BSONReader, BSONObjectID}
+import play.api.libs.json.Json
+import play.modules.reactivemongo.json.BSONFormats._
+
+import reactivemongo.bson.BSONObjectID
+
 import com.github.nscala_time.time.Imports.DateTime
 
 case class Post (
@@ -14,19 +17,11 @@ case class Post (
   fileName: Option[String] = None,
   fileMetadata: Option[FileMetadata] = None,
   thumbnailName: Option[String] = None
-) extends MongoEntity
+) extends MongoEntity { }
 
 object Post {
 
-  // TODO: Factor this out
-  implicit object DateTimeReader extends BSONReader[BSONDateTime, DateTime] {
-    def read(bson: BSONDateTime): DateTime = new DateTime(bson.value)
-  }
-
-  implicit object DateTimeWriter extends BSONWriter[DateTime, BSONDateTime] {
-    def write(t: DateTime): BSONDateTime = BSONDateTime(t.getMillis)
-  }
-
-  implicit val postBSONHandler = bson.Macros.handler[Post]
+  implicit val jsonFormat = Json.format[Post]
+  implicit val fileMetadataJsonFormat = FileMetadata.jsonFormat;
 
 }

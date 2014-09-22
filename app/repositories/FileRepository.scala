@@ -12,12 +12,15 @@ import entities.FileMetadata
 import reactivemongo.api.gridfs.{FileToSave, GridFS, ReadFile}
 import reactivemongo.api.gridfs.Implicits._
 import reactivemongo.bson._
+import play.api.libs.json.Json
+import play.api.Play.current
+import play.modules.reactivemongo.ReactiveMongoPlugin
 
 trait FileRepositoryComponent {
 
   def fileRepository: FileRepository
 
-  trait FileRepository extends MongoRepository {
+  trait FileRepository {
 
     type A = FileMetadata
 
@@ -35,8 +38,7 @@ trait FileRepositoryComponentImpl extends FileRepositoryComponent {
 
   class FileRepositoryImpl extends FileRepository {
 
-    protected val collectionName = "boards"
-    protected val bsonDocumentHandler = FileMetadata.fileMetadataBSONHandler
+    protected val db = ReactiveMongoPlugin.db
 
     protected val gridFSFiles = new GridFS(db, prefix = "files")
     protected val gridFSThumbnails = new GridFS(db, prefix = "thumbs")
