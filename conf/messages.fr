@@ -2,10 +2,11 @@ anonymous=Anonyme
 
 errors.internal=Une erreur interne s'est produite, s'il vous plaît essayez de nouveau
 
-postForm.createThread=Créer un sujet
-postForm.reply=Répondre
 postForm.subject=Sujet
+postForm.name=Surnom
 postForm.email=E-mail
 postForm.content=Message
+postForm.createThread=Créer un sujet
+postForm.reply=Répondre
 
 thread.reply=Répondre

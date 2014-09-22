@@ -41,6 +41,7 @@
         @if(actionName == Messages("postForm.createThread")) { <!--TODO: Check this in a better way-->
           @inputText(postForm("subject"), '_showConstraints -> false, 'placeholder -> Messages("postForm.subject"))
         }
+        @inputText(postForm("name"), '_showConstraints -> false, 'placeholder -> Messages("postForm.name"))
         @inputText(postForm("email"), '_showConstraints -> false, 'placeholder -> Messages("postForm.email"))
         @textarea(postForm("content"), '_showConstraints -> false, 'placeholder -> Messages("postForm.content"))
         @inputFile(postForm("file"))

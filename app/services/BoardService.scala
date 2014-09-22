@@ -145,6 +145,7 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
         newPost <- Future.successful {
           Post(no = board.lastPostNo + 1,
                subject = postData.subject,
+               name = postData.name,
                email = postData.email,
                content = postData.content,
                date = DateTime.now,

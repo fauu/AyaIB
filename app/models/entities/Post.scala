@@ -12,6 +12,7 @@ case class Post (
   no: Int,
   date: DateTime,
   subject: Option[String] = None,
+  name: Option[String] = None,
   email: Option[String] = None,
   content: String,
   fileName: Option[String] = None,

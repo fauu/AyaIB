@@ -2,10 +2,11 @@ anonymous=Anonymous
 
 errors.internal=Internal error has occured, please try again
 
-postForm.createThread=Create thread
-postForm.reply=Reply
 postForm.subject=Subject
+postForm.name=Name
 postForm.email=E-mail
 postForm.content=Message
+postForm.createThread=Create thread
+postForm.reply=Reply
 
 thread.reply=Reply

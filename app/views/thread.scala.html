@@ -13,11 +13,18 @@
       case None => { }
     }
     <span class="poster-name">
-      @post.email match {
-        case Some(email) => {
-          <a href="mailto:@email">@Messages("anonymous")</a>
+      @defining(
+        post.name match {
+          case Some(name) => name
+          case _ => Messages("anonymous")
         }
-        case None => { @Messages("anonymous") }
+      ) { name =>
+        @post.email match {
+          case Some(email) => {
+            <a href="mailto:@email">@name</a>
+          }
+          case _ => { @name }
+        }
       }
     </span> ·
     <span class="date">
@@ -57,7 +64,7 @@
           @postHeader(post, isOp = false)
           @post.fileMetadata match {
             case Some(metadata) => { @file(post) }
-            case None => {}
+            case _ => { }
           }
         }
         <blockquote class="content">
