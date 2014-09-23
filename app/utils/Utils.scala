@@ -26,4 +26,11 @@ object Utils {
   def formatDate(date: DateTime, pattern: String = "yyyy-MM-dd H:mm:ss") =
     DateTimeFormat.forPattern(pattern) print date
 
+  def stringToInt(s: String): Option[Int] =
+    try {
+      Some(s.toInt)
+    } catch {
+      case e: Exception => None
+    }
+
 }

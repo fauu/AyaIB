@@ -8,6 +8,7 @@ object AyaIBContext {
   val boardServiceComponent = new BoardServiceComponentImpl with BoardRepositoryComponentImpl
                                                             with ThreadRepositoryComponentImpl
                                                             with PostIdRepositoryComponentImpl
+                                                            with QuotationRepositoryComponentImpl
                                                             with FileRepositoryComponentImpl
 
   val boardService = boardServiceComponent.boardService

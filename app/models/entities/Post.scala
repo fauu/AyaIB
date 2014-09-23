@@ -1,11 +1,13 @@
 package models.entities
 
-import play.api.libs.json.Json
+import play.api.libs.json._
 import play.modules.reactivemongo.json.BSONFormats._
 
 import reactivemongo.bson.BSONObjectID
 
 import com.github.nscala_time.time.Imports.DateTime
+
+import utils.json.FormatImplicits._
 
 case class Post (
   _id: Option[BSONObjectID] = Some(BSONObjectID.generate),
@@ -23,6 +25,5 @@ case class Post (
 object Post {
 
   implicit val jsonFormat = Json.format[Post]
-  implicit val fileMetadataJsonFormat = FileMetadata.jsonFormat;
 
 }

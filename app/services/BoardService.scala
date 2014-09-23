@@ -3,9 +3,10 @@ package services
 import java.io.File
 
 import scala.{Option, Some}
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
-import scala.util.matching.Regex
+import scala.util.matching.Regex.Match
 
 import play.api.libs.concurrent.Execution.Implicits._
 
@@ -14,12 +15,14 @@ import models.entities._
 import utils.exceptions._
 import models.forms.PostForm
 import reactivemongo.api.gridfs.DefaultFileToSave
-import reactivemongo.bson.BSONObjectID
-import repositories.{PostIdRepositoryComponent, BoardRepositoryComponent, FileRepositoryComponent, ThreadRepositoryComponent}
+import reactivemongo.bson.{BSONInteger, BSONObjectID}
+import repositories._
 import utils.Utils
 import models.wrappers.FileWrapper
 import com.github.nscala_time.time.Imports.DateTime
-import scala.util.matching.Regex.Match
+import java.util.regex.Pattern
+import controllers.routes
+import scala.xml.XML
 
 trait BoardServiceComponent {
 
@@ -50,6 +53,7 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
   this: BoardRepositoryComponent
         with ThreadRepositoryComponent
         with PostIdRepositoryComponent
+        with QuotationRepositoryComponent
         with FileRepositoryComponent =>
 
   def boardService = new BoardServiceImpl
@@ -103,14 +107,63 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
     private def generateFilename(fileWrapper: FileWrapper, timestamp: Long, thumbnail: Boolean = false): String = {
       val extension = Utils.contentTypeToExtension(fileWrapper.contentType.get).getOrElse("ayafile")
       val name = if (thumbnail) timestamp.toString + "_thumb" else timestamp.toString
-      name + "." + extension
+      "%s.%s" format (name, extension)
     }
 
-    private def processPostContent(content: String): String = {
-      val quotePattern = """(?m)^(>.*)$""".r
+    private def processPostContent(board: Board, no: Int, content: String): String = {
+      val quotationLinkPattern = """(?m)^(>>.*)$""".r
+      val withQuotationLinks = quotationLinkPattern replaceAllIn (content, (m: Match) => {
+        val matchedLinkMarkup = m.group(1)
+        val matchedLinkPostNo = matchedLinkMarkup dropWhile (!_.isDigit)
 
-      (quotePattern replaceAllIn (content, (m: Match) => """<span class="quote">%s</span>""" format m.group(1)))
-        .replace("\n", "<br />")
+        Utils.stringToInt(matchedLinkPostNo) match {
+          case Some(linkPostNo) =>
+            val futureFormattedLink = postIdRepository.findOne(board, linkPostNo) map {
+              case Some(postId) =>
+                """<a href="%s">%s</a>""" format (
+                  """%s#post-%s""" format (routes.BoardController.showThread(board.name, postId.threadNo), linkPostNo),
+                   matchedLinkMarkup
+                )
+              case _ => matchedLinkMarkup
+            }
+            quotationRepository.add(Quotation(_sourceBoard_id = board._id,
+                                              sourceNo = no,
+                                              _targetBoard_id = board._id,
+                                              targetNo = linkPostNo))
+            Await.result(futureFormattedLink, 5 seconds)
+          case _ => matchedLinkMarkup
+        }
+      })
+
+      val quotePattern = """(?m)^(>.*)$""".r
+      val withQuotes = quotePattern replaceAllIn (withQuotationLinks, (m: Match) => {
+          """<span class="quote">%s</span>""" format m.group(1)
+      })
+
+      withQuotes.replace("\n", "\n<br />")
+    }
+
+    def fixQuotations(targetBoard: Board, targetNo: Int): Future[Unit] = {
+      val quotations = quotationRepository.findByTarget(targetBoard._id.get, targetNo)
+
+      quotations map { futureQuotations =>
+        futureQuotations map { quotation =>
+          for {
+            sourceBoardOption <- boardRepository findOne quotation._sourceBoard_id.get
+            threadOption <- threadRepository findOneByBoardAndPostNo (sourceBoardOption.get, quotation.sourceNo)
+            isOp = threadOption.get.op.no == quotation.sourceNo
+            post = if (isOp) threadOption.get.op
+                   else (threadOption.get.replies filter (_.no == quotation.sourceNo)).head
+            fixedPost = post copy (
+              content = processPostContent(board = sourceBoardOption.get,
+                                           no = post.no,
+                                           content = XML.loadString("<html>%s</html>" format post.content).text)
+            )
+            _ <- if (isOp) threadRepository updateOp (board = sourceBoardOption.get, threadNo = post.no, op = fixedPost)
+                 else threadRepository updateReply (board = sourceBoardOption.get, replyNo = post.no, reply = fixedPost)
+          } yield ()
+        }
+      }
     }
 
     def addPost(
@@ -152,25 +205,28 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
         (fileNameOption: Option[String], fileMetadataOption: Option[FileMetadata], thumbnailNameOption: Option[String])
           <- futureFileInfo
 
+        newPostNo = board.lastPostNo + 1
+
         newPost <- Future.successful {
-          Post(no = board.lastPostNo + 1,
+          Post(no = newPostNo,
                subject = postData.subject,
                name = postData.name,
                email = postData.email,
-               content = processPostContent(postData.content),
+               content = processPostContent(board, newPostNo, postData.content),
                date = DateTime.now,
                fileName = fileNameOption,
                fileMetadata = fileMetadataOption,
                thumbnailName = thumbnailNameOption)
         }
 
-        _ <- postIdRepository.add(board, PostId(no = newPost.no))
-
         _ <- threadNoOption match {
           case Some(threadNo) =>
              threadRepository.findOneByBoardAndNo(board, threadNo) flatMap { // TODO: This is excessive, fix
                case Some(thread) =>
-                 threadRepository.addReply(board, thread, newPost) flatMap { lastError =>
+                 (for {
+                   lastError <- threadRepository.addReply(board, thread, newPost)
+                   lastError <- postIdRepository.add(board, PostId(threadNo = threadNo, no = newPost.no))
+                 } yield lastError) flatMap { lastError =>
                    if (newPost.email.getOrElse("") != "sage")
                      threadRepository.updateBumpDate(board, threadNo, newPost.date)
                    else
@@ -178,13 +234,19 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
                  }
                case _ => Future.failed(new PersistenceException("Cannot add reply: cannot retrieve thread"))
             }
-          case _ => threadRepository.add(board, Thread(bumpDate = newPost.date, op = newPost))
+          case _ =>
+            for {
+              lastError <- threadRepository.add(board, Thread(bumpDate = newPost.date, op = newPost))
+              lastError <- postIdRepository.add(board, PostId(threadNo = newPost.no, no = newPost.no))
+            } yield lastError
         }
+
+        _ <- fixQuotations(targetBoard = board, targetNo = newPost.no)
       } yield {
         Success(newPost.no)
       }) recover {
         case (ex: IncorrectInputException) => Failure(ex)
-        case (ex: Exception) => Failure(new PersistenceException(s"Cannot save thread: $ex"))
+        case (ex: Exception) => Failure(new PersistenceException(s"Cannot save post: $ex"))
       }
     }
 

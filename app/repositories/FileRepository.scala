@@ -7,6 +7,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import play.api.libs.iteratee.Enumerator
 
+import utils.json.FormatImplicits._
 import com.twitter.io.Files
 import models.entities.FileMetadata
 import reactivemongo.api.gridfs.{FileToSave, GridFS, ReadFile}

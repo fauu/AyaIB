@@ -9,16 +9,16 @@ import utils.json.FormatImplicits._
 
 import com.github.nscala_time.time.Imports.DateTime
 
-case class Thread (
+case class Quotation (
   _id: Option[BSONObjectID] = Some(BSONObjectID.generate),
-  _board_id: Option[BSONObjectID] = None,
-  bumpDate: DateTime,
-  op: Post,
-  replies: List[Post] = List[Post]()
+  _sourceBoard_id: Option[BSONObjectID],
+  sourceNo: Int,
+  _targetBoard_id: Option[BSONObjectID],
+  targetNo: Int
 ) extends MongoEntity { }
 
-object Thread {
+object Quotation {
 
-  implicit val jsonFormat = Json.format[Thread]
+  implicit val jsonFormat = Json.format[Quotation]
 
 }

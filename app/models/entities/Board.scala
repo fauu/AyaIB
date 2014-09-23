@@ -1,6 +1,7 @@
 package models.entities
 
-import play.api.libs.json.Json
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
 import play.modules.reactivemongo.json.BSONFormats._
 
 import reactivemongo.bson.BSONObjectID
@@ -20,6 +21,5 @@ case class Board (
 object Board {
 
   implicit val jsonFormat = Json.format[Board]
-  implicit val boardConfigJsonFormat = BoardConfig.jsonFormat
 
 }
