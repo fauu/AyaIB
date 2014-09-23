@@ -13,6 +13,7 @@ case class Thread (
   _id: Option[BSONObjectID] = Some(BSONObjectID.generate),
   _board_id: Option[BSONObjectID] = None,
   bumpDate: DateTime,
+  numReplies: Int = 0,
   op: Post,
   replies: List[Post] = List[Post]()
 ) extends MongoEntity { }

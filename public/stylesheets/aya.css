@@ -250,6 +250,10 @@ img {
 .post:last-child {
   margin-bottom: 0;
 }
+.ommited-posts-msg {
+  color: #3e658b;
+  margin-bottom: 5px;
+}
 #post-form-container {
   position: fixed;
   right: 0;

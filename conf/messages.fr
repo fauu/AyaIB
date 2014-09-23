@@ -10,3 +10,5 @@ postForm.createThread=Créer un sujet
 postForm.reply=Répondre
 
 thread.reply=Répondre
+thread.ommitedReplies=%s réponses ont été omise. %s pour les voir.
+thread.clickHere=Cliquez ici

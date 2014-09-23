@@ -25,7 +25,7 @@ trait ThreadRepositoryComponent {
 
     def addReply(board: Board, thread: Thread, post: Post): Future[LastError]
 
-    def findByBoardSortedByBumpDateDesc(board: Board): Future[List[Thread]]
+    def findExcerptByBoardSortedByBumpDateDesc(board: Board, maxNumReplies: Int = 3): Future[List[Thread]]
 
     def findOneByBoardAndNo(board: Board, no: Int): Future[Option[Thread]]
 
@@ -34,6 +34,8 @@ trait ThreadRepositoryComponent {
     def findOneByBoardAndOpNo(board: Board, no: Int): Future[Option[Thread]]
 
     def findOneByBoardAndReplyNo(board: Board, no: Int): Future[Option[Thread]]
+
+    def incrementNumReplies(board: Board, no: Int): Future[LastError]
 
     def updateBumpDate(board: Board, no: Int, date: DateTime): Future[LastError]
 
@@ -60,8 +62,10 @@ trait ThreadRepositoryComponentImpl extends ThreadRepositoryComponent {
       mongoUpdate(Json.obj("_board_id" -> board._id.get, "op.no" -> thread.op.no),
                   Json.obj("$push" -> Json.obj("replies" -> post)))
 
-    def findByBoardSortedByBumpDateDesc(board: Board) =
-      mongoFindSorted(Json.obj("_board_id" -> board._id.get), sort = Json.obj("bumpDate" -> -1))
+    def findExcerptByBoardSortedByBumpDateDesc(board: Board, maxNumReplies: Int = 3) =
+      mongoFindSorted(Json.obj("_board_id" -> board._id.get),
+                      projection = Json.obj("replies" -> Json.obj("$slice" -> -1 * maxNumReplies)),
+                      sort = Json.obj("bumpDate" -> -1))
 
     def findOneByBoardAndNo(board: Board, no: Int) =
       mongoFindOne(Json.obj("_board_id" -> board._id.get, "op.no" -> no))
@@ -74,6 +78,10 @@ trait ThreadRepositoryComponentImpl extends ThreadRepositoryComponent {
 
     def findOneByBoardAndOpNo(board: Board, no: Int) =
       mongoFindOne(Json.obj("_board_id" -> board._id.get, "op.no" -> no))
+
+    def incrementNumReplies(board: Board, no: Int) =
+      mongoUpdate(Json.obj("_board_id" -> board._id.get, "op.no" -> no),
+                  Json.obj("$inc" -> Json.obj("numReplies" -> 1)))
 
     def updateBumpDate(board: Board, no: Int, date: DateTime) =
       mongoUpdate(Json.obj("_board_id" -> board._id, "op.no" -> no),

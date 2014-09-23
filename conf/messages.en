@@ -10,3 +10,5 @@ postForm.createThread=Create thread
 postForm.reply=Reply
 
 thread.reply=Reply
+thread.ommitedReplies=%s replies omitted. %s to view.
+thread.clickHere=Click here

@@ -1,6 +1,7 @@
 @(board: models.entities.Board, thread: models.entities.Thread, singleThreadView: Boolean = false)(implicit lang: Lang)
 
 @import utils.Utils
+@import play.twirl.api.Html
 
 @postHeader(post: models.entities.Post, isOp: Boolean) = {
   <header>
@@ -72,5 +73,19 @@
         </blockquote>
       </section>
     </article>
+    @if(post == thread.op) {
+      @defining(thread.numReplies - thread.replies.length) { numOmmitedReplies =>
+        @if(numOmmitedReplies > 0) {
+          <aside class="ommited-posts-msg">
+            @Html(
+              Messages("thread.ommitedReplies")
+                .format(numOmmitedReplies,
+                        """<a href="%s">%s</a>""".format(routes.BoardController.showThread(board.name, thread.op.no),
+                                                         Messages("thread.clickHere")))
+            )
+          </aside>
+        }
+      }
+    }
   }
 </article>

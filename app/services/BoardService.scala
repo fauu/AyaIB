@@ -225,6 +225,7 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
                case Some(thread) =>
                  (for {
                    lastError <- threadRepository.addReply(board, thread, newPost)
+                   lastError <- threadRepository.incrementNumReplies(board, thread.op.no)
                    lastError <- postIdRepository.add(board, PostId(threadNo = threadNo, no = newPost.no))
                  } yield lastError) flatMap { lastError =>
                    if (newPost.email.getOrElse("") != "sage")
@@ -274,7 +275,7 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
     def findBoardWithAllThreads(boardName: String) = {
       boardRepository.findOneByName(boardName) flatMap {
         case Some(board) =>
-          threadRepository.findByBoardSortedByBumpDateDesc(board) map { threads =>
+          threadRepository.findExcerptByBoardSortedByBumpDateDesc(board) map { threads =>
             Success((board, threads))
           }
         case _ => Future.successful(Failure(new PersistenceException("Cannot retrieve board")))
