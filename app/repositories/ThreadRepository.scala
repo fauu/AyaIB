@@ -42,7 +42,7 @@ trait ThreadRepositoryComponentImpl extends ThreadRepositoryComponent {
     protected val collectionName = "threads"
     protected val jsonFormat = Thread.jsonFormat
 
-    def add(board: Board, thread: Thread) = mongoSave(thread.copy(_board_id = board._id))
+    def add(board: Board, thread: Thread) = mongoSave(thread copy (_board_id = board._id))
 
     def addReply(board: Board, thread: Thread, post: Post) =
       mongoUpdate(Json.obj("_board_id" -> board._id.get, "op.no" -> thread.op.no),

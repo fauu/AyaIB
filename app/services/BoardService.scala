@@ -5,6 +5,7 @@ import java.io.File
 import scala.{Option, Some}
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
+import scala.util.matching.Regex
 
 import play.api.libs.concurrent.Execution.Implicits._
 
@@ -14,10 +15,11 @@ import utils.exceptions._
 import models.forms.PostForm
 import reactivemongo.api.gridfs.DefaultFileToSave
 import reactivemongo.bson.BSONObjectID
-import repositories.{BoardRepositoryComponent, FileRepositoryComponent, ThreadRepositoryComponent}
+import repositories.{PostIdRepositoryComponent, BoardRepositoryComponent, FileRepositoryComponent, ThreadRepositoryComponent}
 import utils.Utils
 import models.wrappers.FileWrapper
 import com.github.nscala_time.time.Imports.DateTime
+import scala.util.matching.Regex.Match
 
 trait BoardServiceComponent {
 
@@ -47,6 +49,7 @@ trait BoardServiceComponent {
 trait BoardServiceComponentImpl extends BoardServiceComponent {
   this: BoardRepositoryComponent
         with ThreadRepositoryComponent
+        with PostIdRepositoryComponent
         with FileRepositoryComponent =>
 
   def boardService = new BoardServiceImpl
@@ -103,6 +106,13 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
       name + "." + extension
     }
 
+    private def processPostContent(content: String): String = {
+      val quotePattern = """(?m)^(>.*)$""".r
+
+      (quotePattern replaceAllIn (content, (m: Match) => """<span class="quote">%s</span>""" format m.group(1)))
+        .replace("\n", "<br />")
+    }
+
     def addPost(
       boardName: String,
       threadNoOption: Option[Int] = None,
@@ -147,12 +157,14 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
                subject = postData.subject,
                name = postData.name,
                email = postData.email,
-               content = postData.content,
+               content = processPostContent(postData.content),
                date = DateTime.now,
                fileName = fileNameOption,
                fileMetadata = fileMetadataOption,
                thumbnailName = thumbnailNameOption)
         }
+
+        _ <- postIdRepository.add(board, PostId(no = newPost.no))
 
         _ <- threadNoOption match {
           case Some(threadNo) =>

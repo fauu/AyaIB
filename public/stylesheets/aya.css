@@ -226,6 +226,9 @@ img {
 .post > .body > .content {
   min-width: 20em;
 }
+.post > .body > .content > .quote {
+  color: #789922;
+}
 .post:first-of-type > .body {
   padding: 2.5px 5px;
 }
