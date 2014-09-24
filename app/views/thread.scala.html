@@ -3,6 +3,8 @@
 @import utils.Utils
 @import play.twirl.api.Html
 
+@threadRoute(boardName: String, threadNo: Int) = { @routes.BoardController.showThread(boardName, threadNo) }
+
 @postHeader(post: models.entities.Post, isOp: Boolean) = {
   <header>
     @post.subject match {
@@ -31,11 +33,11 @@
     <span class="date">
       @Utils.formatDate(post.date) ·
     </span>
-    <a class="no" href="@routes.BoardController.showThread(board.name, thread.op.no)#post-@post.no">
+    <a class="no" href="@threadRoute(board.name, thread.no)#post-@post.no">
       #@post.no
     </a>
     @if(isOp && !isSingleThreadView) {
-      <a class="reply-link" href="@routes.BoardController.showThread(board.name, thread.op.no)">
+      <a class="reply-link" href="@threadRoute(board.name, thread.no)">
         @Messages("thread.reply")
       </a>
     }
@@ -69,19 +71,31 @@
           }
         }
         <blockquote class="content">
-          @* TODO: Truncate long posts if not in single thread view *@
-          @Html(post.content)
+          @if(isSingleThreadView) {
+            @Html(post.content)
+          } else {
+            @Html(post.contentPreview(500))
+          }
         </blockquote>
+        @if(!isSingleThreadView && post.content.length > 500) {
+          <aside class="text-too-long-msg">
+            @Html(
+              Messages("thread.textTooLong")
+                  .format( """<a href="%s">%s</a>""".format(threadRoute(board.name, thread.no),
+                                                            Messages("thread.clickHere")))
+            )
+          </aside>
+        }
       </section>
     </article>
-    @if(post == thread.op) {
+    @if(!isSingleThreadView && post == thread.op) {
       @defining(thread.numReplies - thread.replies.length) { numOmmitedReplies =>
         @if(numOmmitedReplies > 0) {
-          <aside class="ommited-posts-msg">
+          <aside class="omitted-posts-msg">
             @Html(
               Messages("thread.ommitedReplies")
                 .format(numOmmitedReplies,
-                        """<a href="%s">%s</a>""".format(routes.BoardController.showThread(board.name, thread.op.no),
+                        """<a href="%s">%s</a>""".format(threadRoute(board.name, thread.no),
                                                          Messages("thread.clickHere")))
             )
           </aside>

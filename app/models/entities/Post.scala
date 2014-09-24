@@ -20,7 +20,13 @@ case class Post (
   fileName: Option[String] = None,
   fileMetadata: Option[FileMetadata] = None,
   thumbnailName: Option[String] = None
-) extends MongoEntity { }
+) extends MongoEntity {
+
+  def contentPreview(length: Int): String =
+    if (content.length <= length) content
+    else "%s…" format (content take (content lastIndexWhere (_.isSpaceChar, length + 1))).trim
+
+}
 
 object Post {
 

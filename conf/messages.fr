@@ -12,3 +12,7 @@ postForm.reply=Répondre
 thread.reply=Répondre
 thread.ommitedReplies=%s réponses ont été omise. %s pour les voir.
 thread.clickHere=Cliquez ici
+thread.textTooLong=Le message est trop long. %s pour voir le texte complet.
+
+threadPage.previous=Précédent
+threadPage.next=Suivant

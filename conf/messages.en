@@ -12,3 +12,8 @@ postForm.reply=Reply
 thread.reply=Reply
 thread.ommitedReplies=%s replies omitted. %s to view.
 thread.clickHere=Click here
+thread.textTooLong=Message too long. %s to view the full text.
+
+threadPage.previous=Previous
+threadPage.next=Next
+

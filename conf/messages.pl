@@ -12,3 +12,7 @@ postForm.reply=Odpowiedz
 thread.reply=Odpowiedz
 thread.ommitedReplies=%s odpowiedzi pominięto. %s, aby je wyświetlić.
 thread.clickHere=Kliknij tutaj
+thread.textTooLong=Wiadomość jest zbyt długa. %s, aby wyświetlić ją w całości.
+
+threadPage.previous=Poprzednia
+threadPage.next=Następna

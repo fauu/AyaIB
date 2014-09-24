@@ -15,7 +15,6 @@
   }
 }
 
-
 @main("%s - %s".format(board.slashizedName, board.fullName)) {
 
   @flash.get("error").map { message =>
@@ -44,7 +43,7 @@
     @if(!isSingleThreadView) {
       <section id="pagination">
         @if(currentPageNo.get > 1) {
-          <a href="@pageRoute(board.name, currentPageNo.get - 1)">Previous</a>
+          <a href="@pageRoute(board.name, currentPageNo.get - 1)">@Messages("threadPage.previous")</a>
         }
         <ol id="page-list">
           @for(pageNo <- 1 to numPages.get) {
@@ -54,7 +53,7 @@
           }
         </ol>
         @if(currentPageNo.get < numPages.get) {
-          <a href="@pageRoute(board.name, currentPageNo.get + 1)">Next</a>
+          <a href="@pageRoute(board.name, currentPageNo.get + 1)">@Messages("threadPage.next")</a>
         }
       </section>
     }

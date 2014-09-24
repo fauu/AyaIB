@@ -16,7 +16,11 @@ case class Thread (
   numReplies: Int = 0,
   op: Post,
   replies: List[Post] = List[Post]()
-) extends MongoEntity { }
+) extends MongoEntity {
+
+  def no: Int = op.no;
+
+}
 
 object Thread {
 

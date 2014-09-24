@@ -225,7 +225,7 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
                case Some(thread) =>
                  (for {
                    lastError <- threadRepository.addReply(board, thread, newPost)
-                   lastError <- threadRepository.incrementNumReplies(board, thread.op.no)
+                   lastError <- threadRepository.incrementNumReplies(board, thread.no)
                    lastError <- postIdRepository.add(board, PostId(threadNo = threadNo, no = newPost.no))
                  } yield lastError) flatMap { lastError =>
                    if (newPost.email.getOrElse("") != "sage")

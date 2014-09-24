@@ -273,7 +273,8 @@ img {
 .post:last-child {
   margin-bottom: 0;
 }
-.ommited-posts-msg {
+.omitted-posts-msg,
+.text-too-long-msg {
   color: #3e658b;
   margin-bottom: 5px;
 }
