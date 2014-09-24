@@ -43,7 +43,7 @@ trait BoardServiceComponent {
 
     def findBoardWithThread(boardName: String, threadNo: Int): Future[Try[(Board, Thread)]]
 
-    def findBoardWithAllThreads(boardName: String): Future[Try[(Board, List[Thread])]]
+    def findBoardWithThreadPage(boardName: String, pageNo: Int): Future[Try[(Board, List[Thread], Int)]]
 
   }
 
@@ -261,7 +261,7 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
         case _ => None
       }
 
-    def findBoardWithThread(boardName: String, threadNo: Int) = {
+    def findBoardWithThread(boardName: String, threadNo: Int) =
       boardRepository.findOneByName(boardName) flatMap {
         case Some(board) =>
           threadRepository.findOneByBoardAndNo(board, threadNo) map {
@@ -270,13 +270,21 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
           }
         case _ => Future.successful(Failure(new PersistenceException("Cannot retrieve board")))
       }
-    }
 
-    def findBoardWithAllThreads(boardName: String) = {
+    def findBoardWithThreadPage(boardName: String, pageNo: Int) = {
       boardRepository.findOneByName(boardName) flatMap {
         case Some(board) =>
-          threadRepository.findExcerptByBoardSortedByBumpDateDesc(board) map { threads =>
-            Success((board, threads))
+          threadRepository.findCountByBoard(board) flatMap { threadCount =>
+            val numPages = threadCount / board.config.threadsPerPage
+            if ((1 to numPages) contains pageNo) {
+              val futureThreads =
+                threadRepository
+                  .findExcerptsByBoardSortedByBumpDateDescLimited(board = board,
+                    maxNumReplies = 3,
+                    start = board.config.threadsPerPage * (pageNo - 1),
+                    count = board.config.threadsPerPage)
+              futureThreads map (threads => Success((board, threads, numPages)))
+            } else Future.successful(Failure(new IncorrectInputException("Requested page does not exist")))
           }
         case _ => Future.successful(Failure(new PersistenceException("Cannot retrieve board")))
       }

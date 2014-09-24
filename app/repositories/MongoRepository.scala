@@ -9,9 +9,11 @@ import play.modules.reactivemongo.ReactiveMongoPlugin
 import play.modules.reactivemongo.json.ImplicitBSONHandlers
 import play.modules.reactivemongo.json.collection.JSONCollection
 
-import reactivemongo.core.commands.{GetLastError, LastError}
+import reactivemongo.core.commands.{Count, GetLastError, LastError}
 
 import models.entities.MongoEntity
+import reactivemongo.api.QueryOpts
+import reactivemongo.bson.BSONDocument
 
 trait MongoRepository extends ImplicitBSONHandlers {
 
@@ -25,13 +27,21 @@ trait MongoRepository extends ImplicitBSONHandlers {
 
   def mongoSave(a: A): Future[LastError] = collection.insert(a, awaitJournalCommit)
 
+  def mongoCount(selector: BSONDocument = BSONDocument()): Future[Int] =
+    collection.db.command(Count(collection.name, Some(selector)))
+
   def mongoFind(selector: JsObject = Json.obj(), projection: JsObject = Json.obj()): Future[List[A]] =
     collection.find(selector, projection).cursor[A].collect[List](1000, stopOnError = false)
 
-  def mongoFindSorted(selector: JsObject = Json.obj(),
-                      projection: JsObject = Json.obj(),
-                      sort: JsObject): Future[List[A]] =
-    collection.find(selector, projection).sort(sort).cursor[A].collect[List](1000, stopOnError = false)
+  def mongoFindSortedAndLimited(selector: JsObject = Json.obj(),
+                                projection: JsObject = Json.obj(),
+                                sort: JsObject,
+                                start: Int,
+                                count: Int): Future[List[A]] =
+    collection.find(selector, projection)
+              .options(QueryOpts(start, count))
+              .sort(sort).cursor[A]
+              .collect[List](1000, stopOnError = false)
 
   def mongoFindOne(selector: JsObject, projection: JsObject = Json.obj()): Future[Option[A]] =
     collection.find(selector, projection).one[A]

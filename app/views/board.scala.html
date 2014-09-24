@@ -1,9 +1,20 @@
 @(board: models.entities.Board,
   threads: List[models.entities.Thread],
-  singleThreadView: Boolean = false,
+  isSingleThreadView: Boolean = false,
+  currentPageNo: Option[Int] = None,
+  numPages: Option[Int] = None,
   postForm: Form[models.forms.PostForm])(implicit lang: Lang, flash: Flash)
 
 @import helper._
+
+@pageRoute(boardName: String, pageNo: Int) = {
+  @if(pageNo == 1) {
+    @routes.BoardController.show(boardName)
+  } else {
+    @routes.BoardController.showPage(boardName, pageNo)
+  }
+}
+
 
 @main("%s - %s".format(board.slashizedName, board.fullName)) {
 
@@ -24,21 +35,38 @@
       </h2>
     </header>
     <section id="threads">
-    @if(singleThreadView) {
-      @views.html.thread(board, threads.head, singleThreadView = true)
-    } else {
-      @for(thread <- threads) { @views.html.thread(board, thread) }
-    }
+      @if(isSingleThreadView) {
+        @views.html.thread(board, threads.head, isSingleThreadView = true)
+      } else {
+        @for(thread <- threads) { @views.html.thread(board, thread) }
+      }
     </section>
+    @if(!isSingleThreadView) {
+      <section id="pagination">
+        @if(currentPageNo.get > 1) {
+          <a href="@pageRoute(board.name, currentPageNo.get - 1)">Previous</a>
+        }
+        <ol id="page-list">
+          @for(pageNo <- 1 to numPages.get) {
+            <li class="entry @if(pageNo == currentPageNo.get) {active}">
+              <a href="@pageRoute(board.name, pageNo)">@pageNo</a>
+            </li>
+          }
+        </ol>
+        @if(currentPageNo.get < numPages.get) {
+          <a href="@pageRoute(board.name, currentPageNo.get + 1)">Next</a>
+        }
+      </section>
+    }
   </main>
 
   <aside id="post-form-container">
     @defining(
-      if(singleThreadView) (routes.BoardController.postInThread(board.name, threads.head.op.no), Messages("postForm.reply"))
+      if(isSingleThreadView) (routes.BoardController.postInThread(board.name, threads.head.op.no), Messages("postForm.reply"))
       else (routes.BoardController.createThread(board.name), Messages("postForm.createThread"))
     ) { case (actionUrl, actionName) =>
       @form(action = actionUrl, 'enctype -> "multipart/form-data") {
-        @if(actionName == Messages("postForm.createThread")) { <!--TODO: Check this in a better way-->
+        @if(actionName == Messages("postForm.createThread")) { @* TODO: Perhaps check this in some other way *@
           @inputText(postForm("subject"), '_showConstraints -> false, 'placeholder -> Messages("postForm.subject"))
         }
         @inputText(postForm("name"), '_showConstraints -> false, 'placeholder -> Messages("postForm.name"))

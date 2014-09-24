@@ -4,14 +4,15 @@
 
 GET         /                                   controllers.ImageboardController.index
 
+GET         /file/:name                         controllers.FileController.get(name: String, thumbnail: Boolean = false)
+GET         /file/thumb/:name                   controllers.FileController.get(name: String, thumbnail: Boolean = true)
+
 GET         /:name                              controllers.BoardController.fixUrlAndRedirect(name: String)
 GET         /:name/                             controllers.BoardController.show(name: String)
+GET         /:boardName/:no                     controllers.BoardController.showPage(boardName: String, no: Int)
 POST        /:boardName                         controllers.BoardController.createThread(boardName: String)
 
 GET         /:boardName/thread/:no              controllers.BoardController.showThread(boardName: String, no: Int)
 POST        /:boardName/thread/:threadNo        controllers.BoardController.postInThread(boardName: String, threadNo: Int)
-
-GET         /file/:name                         controllers.FileController.get(name: String, thumbnail: Boolean = false)
-GET         /file/thumb/:name                  controllers.FileController.get(name: String, thumbnail: Boolean = true)
 
 GET         /public/*file                       controllers.Assets.at(path="/public", file)

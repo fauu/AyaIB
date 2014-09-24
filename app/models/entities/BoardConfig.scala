@@ -7,7 +7,9 @@ import reactivemongo.bson.BSONObjectID
 
 case class BoardConfig (
   _id: Option[BSONObjectID] = Some(BSONObjectID.generate),
-  allowedContentTypes: List[String]
+  allowedContentTypes: List[String],
+  maxNumPages: Int,
+  threadsPerPage: Int
 ) extends MongoEntity { }
 
 object BoardConfig {

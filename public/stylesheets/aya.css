@@ -162,8 +162,31 @@ h2 > a {
   margin: 10px;
   margin-top: 20px;
 }
+#pagination {
+  display: inline-block;
+  margin: 10px;
+  background-color: #ffffff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px #bed9da;
+}
+#pagination > #page-list {
+  list-style-type: none;
+  display: inline;
+}
+#pagination > #page-list > .entry {
+  display: inline;
+  margin-left: 5px;
+}
+#pagination > #page-list > .entry:last-child {
+  margin-right: 5px;
+}
+#pagination > #page-list > .entry.active {
+  font-weight: bold;
+}
 .thread {
   margin-bottom: 20px;
+  padding-bottom: 5px;
   overflow: hidden;
 }
 .thread:not(:last-child) {

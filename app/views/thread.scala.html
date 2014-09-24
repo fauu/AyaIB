@@ -1,4 +1,4 @@
-@(board: models.entities.Board, thread: models.entities.Thread, singleThreadView: Boolean = false)(implicit lang: Lang)
+@(board: models.entities.Board, thread: models.entities.Thread, isSingleThreadView: Boolean = false)(implicit lang: Lang)
 
 @import utils.Utils
 @import play.twirl.api.Html
@@ -34,7 +34,7 @@
     <a class="no" href="@routes.BoardController.showThread(board.name, thread.op.no)#post-@post.no">
       #@post.no
     </a>
-    @if(isOp && !singleThreadView) {
+    @if(isOp && !isSingleThreadView) {
       <a class="reply-link" href="@routes.BoardController.showThread(board.name, thread.op.no)">
         @Messages("thread.reply")
       </a>
@@ -69,6 +69,7 @@
           }
         }
         <blockquote class="content">
+          @* TODO: Truncate long posts if not in single thread view *@
           @Html(post.content)
         </blockquote>
       </section>

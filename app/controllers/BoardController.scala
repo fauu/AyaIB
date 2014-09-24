@@ -23,9 +23,16 @@ object BoardController extends Controller {
     Redirect(routes.BoardController.show(name))
   }
 
-  def show(name: String) = Action.async { implicit request =>
-    boardService.findBoardWithAllThreads(name) map {
-      case Success((board, threads)) => Ok(views.html.board(board = board, threads = threads, postForm = PostForm.get))
+  def show(name: String) = showPage(name, 1)
+
+  def showPage(boardName: String, no: Int) = Action.async { implicit request =>
+    boardService.findBoardWithThreadPage(boardName, no) map {
+      case Success((board, threads, numPages)) =>
+        Ok(views.html.board(board = board,
+                            threads = threads,
+                            currentPageNo = Some(no),
+                            numPages = Some(numPages),
+                            postForm = PostForm.get))
       case _ => NotFound(views.html.notFound())
     }
   }
@@ -35,7 +42,7 @@ object BoardController extends Controller {
       case Success((board, thread)) =>
         Ok(views.html.board(board = board,
                             threads = List[Thread](thread),
-                            singleThreadView = true,
+                            isSingleThreadView = true,
                             postForm = PostForm.get))
       case Failure(ex) =>
         NotFound(views.html.notFound())
@@ -60,10 +67,9 @@ object BoardController extends Controller {
           case Failure(ex: IncorrectInputException)
             => Redirect(routes.BoardController.show(boardName)).flashing("error" -> ex.getMessage)
 
-          case Failure(ex) => {
+          case Failure(ex) =>
             Logger.error(s"Cannot add new thread: $ex")
             Redirect(routes.BoardController.show(boardName)).flashing("failure" -> "")
-          }
         }
       } getOrElse Future.successful {
         Redirect(routes.BoardController.show(boardName)).flashing("error" -> "Please fill all required fields")
@@ -92,10 +98,9 @@ object BoardController extends Controller {
         case Failure(ex: IncorrectInputException) =>
           Redirect(routes.BoardController.show(boardName)).flashing("error" -> ex.getMessage)
 
-        case Failure(ex) => {
+        case Failure(ex) =>
           Logger.error(s"Cannot add new post: $ex")
           Redirect(routes.BoardController.show(boardName)).flashing("failure" -> "")
-        }
       }
     } getOrElse Future.successful {
       Redirect(routes.BoardController.show(boardName)).flashing("error" -> "Please fill all required fields")

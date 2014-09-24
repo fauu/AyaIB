@@ -11,7 +11,7 @@ import com.github.nscala_time.time.Imports.DateTime
 
 import utils.json.FormatImplicits._
 import models.entities.{Post, Board, Thread}
-import reactivemongo.bson.BSONObjectID
+import reactivemongo.bson.{BSONDocument, BSONObjectID}
 
 trait ThreadRepositoryComponent {
 
@@ -25,7 +25,13 @@ trait ThreadRepositoryComponent {
 
     def addReply(board: Board, thread: Thread, post: Post): Future[LastError]
 
-    def findExcerptByBoardSortedByBumpDateDesc(board: Board, maxNumReplies: Int = 3): Future[List[Thread]]
+    def findCountByBoard(board: Board): Future[Int]
+
+    // Well, this is going out of hand
+    def findExcerptsByBoardSortedByBumpDateDescLimited(board: Board,
+                                                       maxNumReplies: Int = 3,
+                                                       start: Int = 0,
+                                                       count: Int = 15): Future[List[Thread]]
 
     def findOneByBoardAndNo(board: Board, no: Int): Future[Option[Thread]]
 
@@ -62,10 +68,17 @@ trait ThreadRepositoryComponentImpl extends ThreadRepositoryComponent {
       mongoUpdate(Json.obj("_board_id" -> board._id.get, "op.no" -> thread.op.no),
                   Json.obj("$push" -> Json.obj("replies" -> post)))
 
-    def findExcerptByBoardSortedByBumpDateDesc(board: Board, maxNumReplies: Int = 3) =
-      mongoFindSorted(Json.obj("_board_id" -> board._id.get),
-                      projection = Json.obj("replies" -> Json.obj("$slice" -> -1 * maxNumReplies)),
-                      sort = Json.obj("bumpDate" -> -1))
+    def findCountByBoard(board: Board): Future[Int] = mongoCount(BSONDocument("_board_id" -> board._id))
+
+    def findExcerptsByBoardSortedByBumpDateDescLimited(board: Board,
+                                                       maxNumReplies: Int = 3,
+                                                       start: Int = 0,
+                                                       count: Int = 15) =
+      mongoFindSortedAndLimited(Json.obj("_board_id" -> board._id.get),
+                                projection = Json.obj("replies" -> Json.obj("$slice" -> -1 * maxNumReplies)),
+                                sort = Json.obj("bumpDate" -> -1),
+                                start = start,
+                                count = count)
 
     def findOneByBoardAndNo(board: Board, no: Int) =
       mongoFindOne(Json.obj("_board_id" -> board._id.get, "op.no" -> no))
