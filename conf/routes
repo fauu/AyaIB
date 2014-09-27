@@ -7,6 +7,11 @@ GET         /                                   controllers.ImageboardController
 GET         /file/:name                         controllers.FileController.get(name: String, thumbnail: Boolean = false)
 GET         /file/thumb/:name                   controllers.FileController.get(name: String, thumbnail: Boolean = true)
 
+GET         /staff                              controllers.StaffPanelController.index
+GET         /staff/login                        controllers.StaffAuthController.showLoginForm
+POST        /staff/login                        controllers.StaffAuthController.authenticate
+GET         /staff/logout                       controllers.StaffAuthController.logout
+
 GET         /:name                              controllers.BoardController.fixUrlAndRedirect(name: String)
 GET         /:name/                             controllers.BoardController.show(name: String)
 GET         /:boardName/:no                     controllers.BoardController.showPage(boardName: String, no: Int)

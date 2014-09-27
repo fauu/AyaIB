@@ -1,0 +1,18 @@
+@(loginForm: Form[models.forms.StaffLoginForm])(implicit flash: Flash)
+
+@import helper._
+
+@main("Staff Login") {
+
+  <main id="staff-login">
+    @flash.get("error").map { message =>
+      <span class="error">@message</span>
+    }
+    @form(action = routes.StaffAuthController.authenticate) {
+      @inputText(loginForm("id"), 'show_constraints -> false, 'placeholder -> Messages("staff.id"))
+      @inputPassword(loginForm("password"), 'show_constraints -> false, 'placeholder -> Messages("staff.password"))
+      <button type="submit">@Messages("staff.loginAction")</button>
+    }
+  </main>
+
+}

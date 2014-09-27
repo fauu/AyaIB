@@ -5,6 +5,7 @@ import play.api.libs.json._
 import com.github.nscala_time.time.Imports.{DateTime, DateTimeZone}
 
 import models.entities.{PostId, Post, BoardConfig, FileMetadata}
+import auth.{Moderator, Janitor, Administrator, Permission}
 
 object FormatImplicits {
 
@@ -14,7 +15,7 @@ object FormatImplicits {
   implicit val postIdJsonFormat = PostId.jsonFormat
 
   implicit def dateTimeReads: Reads[DateTime] =
-    (__ \ "$date").read[Long].map { dateTime =>
+    (__ \ "$date").read[Long] map { dateTime =>
       new DateTime(dateTime, DateTimeZone.UTC)
     }
 
@@ -25,6 +26,13 @@ object FormatImplicits {
   /* https://github.com/ReactiveMongo/Play-ReactiveMongo/issues/33 */
   implicit def intWrites: Writes[Int] = new Writes[Int] {
     def writes(n: Int): JsValue = Json.obj("$int" -> JsNumber(n))
+  }
+
+  implicit def permissionReads: Reads[Permission] =
+    __.read[String] map (permissionStr => Permission.valueOf(permissionStr))
+
+  implicit def permissionWrites: Writes[Permission] = new Writes[Permission] {
+    def writes(permission: Permission): JsValue = JsString(permission.toString())
   }
 
 }

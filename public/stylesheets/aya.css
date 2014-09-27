@@ -117,7 +117,6 @@ body {
   background: -webkit-linear-gradient(top, #bed9da 0%, #f2f8f9 200px);
   background: -moz-linear-gradient(top, #bed9da 0%, #f2f8f9 200px);
   background: linear-gradient(top, #bed9da 0%, #f2f8f9 200px);
-  margin-top: 10px;
   font-size: 13px;
   line-height: 1.4em;
 }
@@ -142,6 +141,9 @@ a:hover {
 #board-list > li {
   font-size: 20px;
   font-weight: bold;
+}
+#board {
+  margin-top: 20px;
 }
 #board > header {
   text-align: center;
@@ -277,6 +279,81 @@ img {
 .text-too-long-msg {
   color: #3e658b;
   margin-bottom: 5px;
+}
+#staff-login {
+  margin: 100px auto;
+  width: 300px;
+  background-color: #ffffff;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  box-shadow: 0 0 10px #bed9da;
+}
+#staff-login > .error {
+  background-color: #cf000f;
+  padding: 2.5px 5px;
+  color: #ffffff;
+  font-weight: bold;
+  display: inline-block;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+#staff-login > form label {
+  display: none;
+}
+#staff-login > form input {
+  padding: 6.66666667px;
+  font-size: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+#staff-login > form button {
+  font-size: 16px;
+  margin-top: 5px;
+  padding: 5px 2.5px;
+}
+#sidebar {
+  float: left;
+  width: 200px;
+  background-color: #ffffff;
+  height: 100vh;
+  padding: 5px 10px;
+  box-shadow: 0 0 10px #bed9da;
+}
+#sidebar > header {
+  border-bottom: 1px solid #f2f8f9;
+  margin-bottom: 10px;
+  height: 25px;
+}
+#sidebar > header > h4 {
+  float: left;
+  display: inline;
+  color: #3e658b;
+  font-size: 15px;
+}
+#sidebar #logout-link {
+  float: right;
+  font-size: 15px;
+}
+#sidebar > section > header {
+  font-weight: bold;
+  margin-bottom: 3.33333333px;
+}
+#sidebar > section > ul {
+  list-style-type: none;
+}
+#sidebar > section > ul > li {
+  height: 20px;
+}
+#sidebar > section > ul .action-name {
+  vertical-align: 1px;
+}
+#sidebar .fa {
+  width: 15px;
+}
+#content {
+  overflow: hidden;
+  padding: 5px 10px;
 }
 #post-form-container {
   position: fixed;

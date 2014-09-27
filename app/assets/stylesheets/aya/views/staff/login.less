@@ -1,0 +1,39 @@
+#staff-login {
+  margin: 100px auto;
+  width: 300px;
+  background-color: @text-bg;
+  padding: @default-padding;
+  border-radius: @default-border-radius;
+  text-align: center;
+  .outer-glow;
+
+  > .error {
+    background-color: @error;
+    padding: @default-padding/4 @default-padding/2;
+    color: @text-bg;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: @default-padding;
+    border-radius: @default-border-radius;
+  }
+
+  > form {
+
+    label {
+      display: none;
+    }
+
+    input {
+      padding: @default-padding/1.5;
+      font-size: 20px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    button {
+      font-size: 16px;
+      margin-top: @default-padding/2;
+      padding: @default-padding/2 @default-padding/4;
+    }
+  }
+}

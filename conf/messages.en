@@ -17,3 +17,8 @@ thread.textTooLong=Message too long. %s to view the full text.
 threadPage.previous=Previous
 threadPage.next=Next
 
+staff.id=ID
+staff.password=Password
+staff.loginAction=Log In
+staff.staffPanel=Staff Panel
+

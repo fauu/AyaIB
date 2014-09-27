@@ -17,4 +17,8 @@ object AyaIBContext {
 
   val fileService = fileServiceComponent.fileService
 
+  val staffServiceComponent = new StaffServiceComponentImpl with StaffMemberRepositoryComponentImpl
+
+  val staffService = staffServiceComponent.staffService
+
 }

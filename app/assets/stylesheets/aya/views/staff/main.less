@@ -1,0 +1,57 @@
+#sidebar {
+  float: left;
+  width: @staff-sidebar-width;
+  background-color: @text-bg;
+  height: 100vh;
+  padding: @default-padding/2 @default-padding;
+  .outer-glow;
+
+  > header {
+    border-bottom: 1px solid @bg-lighter;
+    margin-bottom: @default-padding;
+    height: 25px;
+
+    > h4 {
+      float: left;
+      display: inline;
+      color: @light-text;
+      font-size: 15px;
+    }
+  }
+
+  #logout-link {
+    float: right;
+    font-size: 15px;
+  }
+
+  > section {
+    > header {
+      font-weight: bold;
+      margin-bottom: @default-padding/3;
+    }
+
+    > ul {
+      list-style-type: none;
+
+      > li {
+        height: 20px;
+      }
+      .action-name {
+        vertical-align: 1px;
+      }
+    }
+  }
+
+  > #boards {
+
+  }
+
+  .fa {
+    width: 15px;
+  }
+}
+
+#content {
+  overflow: hidden;
+  padding: @default-padding/2 @default-padding;
+}
