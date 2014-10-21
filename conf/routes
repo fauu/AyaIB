@@ -11,6 +11,9 @@ GET         /staff                              controllers.StaffPanelController
 GET         /staff/login                        controllers.StaffAuthController.showLoginForm
 POST        /staff/login                        controllers.StaffAuthController.authenticate
 GET         /staff/logout                       controllers.StaffAuthController.logout
+GET         /staff/boards/manage                controllers.StaffPanelController.manageBoards
+GET         /staff/boards/new                   controllers.StaffPanelController.newBoardForm
+POST        /staff/boards/new                   controllers.StaffPanelController.addNewBoard
 
 GET         /:name                              controllers.BoardController.fixUrlAndRedirect(name: String)
 GET         /:name/                             controllers.BoardController.show(name: String)

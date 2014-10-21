@@ -13,7 +13,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 import com.sksamuel.scrimage.{AsyncImage, Format}
 import models.entities._
 import utils.exceptions._
-import models.forms.PostForm
+import models.forms.{BoardForm, PostForm}
 import reactivemongo.api.gridfs.DefaultFileToSave
 import reactivemongo.bson.{BSONInteger, BSONObjectID}
 import repositories._
@@ -29,6 +29,8 @@ trait BoardServiceComponent {
   def boardService: BoardService
 
   trait BoardService {
+
+    def addBoard(boardData: BoardForm): Future[Try[Unit]]
 
     def addPost(boardName: String,
                 threadNoOption: Option[Int] = None,
@@ -143,8 +145,8 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
       withQuotes.replace("\n", "\n<br />")
     }
 
-    def fixQuotations(targetBoard: Board, targetNo: Int): Future[Unit] = {
-      val quotations = quotationRepository.findByTarget(targetBoard._id.get, targetNo)
+    private def fixQuotations(targetBoard: Board, targetNo: Int): Future[Unit] = {
+      val quotations = quotationRepository findByTarget (targetBoard._id.get, targetNo)
 
       quotations map { futureQuotations =>
         futureQuotations map { quotation =>
@@ -163,6 +165,28 @@ trait BoardServiceComponentImpl extends BoardServiceComponent {
                  else threadRepository updateReply (board = sourceBoardOption.get, replyNo = post.no, reply = fixedPost)
           } yield ()
         }
+      }
+    }
+
+    def addBoard(boardData: BoardForm) = {
+      (for {
+        _ <- boardRepository.findOneByName(boardData.name) map {
+          case Some(board) => Future failed new IncorrectInputException("Board with specified name already exists")
+          case _ => Future successful ()
+        }
+
+        newBoardConfig = BoardConfig(allowedContentTypes = boardData.allowedContentTypesStr split ";" toList,
+                                     maxNumPages = boardData.maxNumPages,
+                                     threadsPerPage = boardData.threadsPerPage)
+
+        newBoard = Board(name = boardData.name, fullName = boardData.fullName, config = newBoardConfig)
+
+        _ <- boardRepository add newBoard
+      } yield {
+        Success()
+      }) recover {
+        case (ex: IncorrectInputException) => Failure(ex)
+        case (ex: Exception) => Failure(new PersistenceException(s"Cannot save board: $ex"))
       }
     }
 

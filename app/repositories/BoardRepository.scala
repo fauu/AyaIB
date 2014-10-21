@@ -19,6 +19,8 @@ trait BoardRepositoryComponent {
 
     type A = Board
 
+    def add(board: Board): Future[LastError]
+
     def findAll: Future[List[Board]]
 
     def findOne(_id: BSONObjectID): Future[Option[Board]]
@@ -39,6 +41,8 @@ trait BoardRepositoryComponentImpl extends BoardRepositoryComponent {
 
     protected val collectionName = "boards"
     protected val jsonFormat = Board.jsonFormat
+
+    def add(board: Board) = mongoSave(board)
 
     def findAll = mongoFind()
 

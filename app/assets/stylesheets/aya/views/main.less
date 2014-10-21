@@ -9,11 +9,55 @@ body {
   line-height: 1.4em;
 }
 
+h1 { font-size: 2em; }
+h2 { font-size: 1.5em; }
+h3 { font-size: 1.17em; }
+h5 { font-size: .83em; }
+h6 { font-size: .75em; }
+
 a {
   color: @link;
   text-decoration: none;
 
   &:hover {
     color: @link-hover
+  }
+}
+
+#post-form-container {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 350px;
+  padding: @default-padding;
+  background-color: @text-bg;
+  border-top-left-radius: @default-border-radius;
+  .outer-glow;
+
+  > form {
+    text-align: right;
+
+    dt {
+      display: none;
+    }
+
+    input, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 5px;
+    }
+
+    input {
+      margin-bottom: 2px;
+    }
+
+    textarea {
+      height: 120px;
+    }
+
+    button {
+      padding: 5px 3px;
+      font-weight: bold;
+    }
   }
 }

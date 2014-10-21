@@ -12,10 +12,7 @@ object ImageboardController extends Controller {
   val boardService = AyaIBContext.boardService
 
   def index = Action.async {
-    boardService.findAllBoards map {
-      case boards: List[Board] => Ok(views.html.index(boards))
-      case _ => NotFound(views.html.notFound())
-    }
+    boardService.findAllBoards map (boards => Ok(views.html.index(boards)))
   }
 
 }

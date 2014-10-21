@@ -1,0 +1,32 @@
+#new-board-form {
+  padding: @default-padding;
+  background-color: @text-bg;
+  border-radius: @default-border-radius;
+  width: 200px;
+  text-align: center;
+  .outer-glow;
+
+  > dl {
+    margin-bottom: @default-padding/2;
+
+    dt {
+      text-align: left;
+    }
+
+    label {
+      font-weight: bold;
+      font-size: 11px;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: @default-padding/2;
+    }
+  }
+
+  button {
+    margin-top: @default-padding;
+    padding: @default-padding/2 @default-padding;
+  }
+}

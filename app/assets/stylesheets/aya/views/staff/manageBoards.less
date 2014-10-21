@@ -1,0 +1,32 @@
+#board-management-table {
+  width: 400px;
+  background-color: @text-bg;
+  border-radius: @default-border-radius;
+  padding: @default-padding/3 @default-padding @default-padding/1.5 @default-padding;
+  .outer-glow;
+
+  thead {
+    font-size: 11px;
+  }
+
+  tr {
+    border: 1px solid @bg-darker;
+  }
+
+  ul {
+    list-style-type: none;
+
+    > li {
+      display: inline;
+
+      &:not(:last-of-type) {
+        margin-right: @default-padding/2;
+      }
+    }
+  }
+
+  .board {
+    width: 280px;
+    font-weight: bold;
+  }
+}

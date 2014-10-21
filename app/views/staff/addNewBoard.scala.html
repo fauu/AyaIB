@@ -1,0 +1,21 @@
+@(boardForm: Form[forms.BoardForm])
+
+@import helper._
+
+@staff.main(Messages("staff.addNewBoardAction")) {
+  @*flash.get("error").map { message =>*@
+    @*<span class="error">@message</span>*@
+  @*}*@
+
+  @form(action = routes.StaffPanelController.addNewBoard, 'id -> "new-board-form") {
+    @inputText(boardForm("name"), '_showConstraints -> false, '_label -> Messages("staff.boardForm.name"))
+    @inputText(boardForm("fullName"), '_showConstraints -> false, '_label -> Messages("staff.boardForm.fullName"))
+    @inputText(boardForm("allowedContentTypesStr"),
+               '_showConstraints -> false, '_label -> Messages("staff.boardForm.allowedContentTypes"))
+    @inputText(boardForm("maxNumPages"),
+               '_showConstraints -> false, '_label -> Messages("staff.boardForm.maxNumPages"))
+    @inputText(boardForm("threadsPerPage"),
+               '_showConstraints -> false, '_label -> Messages("staff.boardForm.threadsPerPage"))
+    <button type="submit">@Messages("staff.add")</button>
+  }
+}

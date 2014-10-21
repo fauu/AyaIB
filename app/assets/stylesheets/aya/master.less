@@ -8,41 +8,5 @@
 @import "views/thread";
 @import "views/staff/login";
 @import "views/staff/main";
-
-#post-form-container {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  width: 350px;
-  padding: @default-padding;
-  background-color: @text-bg;
-  border-top-left-radius: @default-border-radius;
-  .outer-glow;
-
-  > form {
-    text-align: right;
-
-    dt {
-      display: none;
-    }
-
-    input, textarea {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 5px;
-    }
-
-    input {
-      margin-bottom: 2px;
-    }
-
-    textarea {
-      height: 120px;
-    }
-
-    button {
-      padding: 5px 3px;
-      font-weight: bold;
-    }
-  }
-}
+@import "views/staff/manageBoards";
+@import "views/staff/addNewBoard";

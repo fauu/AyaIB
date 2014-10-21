@@ -120,12 +120,59 @@ body {
   font-size: 13px;
   line-height: 1.4em;
 }
+h1 {
+  font-size: 2em;
+}
+h2 {
+  font-size: 1.5em;
+}
+h3 {
+  font-size: 1.17em;
+}
+h5 {
+  font-size: .83em;
+}
+h6 {
+  font-size: .75em;
+}
 a {
   color: #ff9f00;
   text-decoration: none;
 }
 a:hover {
   color: #ffb233;
+}
+#post-form-container {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 350px;
+  padding: 10px;
+  background-color: #ffffff;
+  border-top-left-radius: 5px;
+  box-shadow: 0 0 10px #bed9da;
+}
+#post-form-container > form {
+  text-align: right;
+}
+#post-form-container > form dt {
+  display: none;
+}
+#post-form-container > form input,
+#post-form-container > form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px;
+}
+#post-form-container > form input {
+  margin-bottom: 2px;
+}
+#post-form-container > form textarea {
+  height: 120px;
+}
+#post-form-container > form button {
+  padding: 5px 3px;
+  font-weight: bold;
 }
 #board-list-container {
   text-align: center;
@@ -148,7 +195,7 @@ a:hover {
 #board > header {
   text-align: center;
 }
-h2 {
+#board > header > h2 {
   font-size: 28px;
   color: #ff9f00;
   display: inline-block;
@@ -156,7 +203,7 @@ h2 {
   border-radius: 5px;
   box-shadow: 0 0 10px #bed9da;
 }
-h2 > a {
+#board > header > h2 > a {
   display: inline-block;
   margin: 14px 12px;
 }
@@ -353,37 +400,62 @@ img {
 }
 #content {
   overflow: hidden;
-  padding: 5px 10px;
+  padding: 6.66666667px 15px;
 }
-#post-form-container {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  width: 350px;
-  padding: 10px;
+h2 {
+  margin-top: 5px;
+  margin-bottom: 20px;
+}
+#board-management-table {
+  width: 400px;
   background-color: #ffffff;
-  border-top-left-radius: 5px;
+  border-radius: 5px;
+  padding: 3.33333333px 10px 6.66666667px 10px;
   box-shadow: 0 0 10px #bed9da;
 }
-#post-form-container > form {
-  text-align: right;
+#board-management-table thead {
+  font-size: 11px;
 }
-#post-form-container > form dt {
-  display: none;
+#board-management-table tr {
+  border: 1px solid #bed9da;
 }
-#post-form-container > form input,
-#post-form-container > form textarea {
+#board-management-table ul {
+  list-style-type: none;
+}
+#board-management-table ul > li {
+  display: inline;
+}
+#board-management-table ul > li:not(:last-of-type) {
+  margin-right: 5px;
+}
+#board-management-table .board {
+  width: 280px;
+  font-weight: bold;
+}
+#new-board-form {
+  padding: 10px;
+  background-color: #ffffff;
+  border-radius: 5px;
+  width: 200px;
+  text-align: center;
+  box-shadow: 0 0 10px #bed9da;
+}
+#new-board-form > dl {
+  margin-bottom: 5px;
+}
+#new-board-form > dl dt {
+  text-align: left;
+}
+#new-board-form > dl label {
+  font-weight: bold;
+  font-size: 11px;
+}
+#new-board-form > dl input {
   width: 100%;
   box-sizing: border-box;
   padding: 5px;
 }
-#post-form-container > form input {
-  margin-bottom: 2px;
-}
-#post-form-container > form textarea {
-  height: 120px;
-}
-#post-form-container > form button {
-  padding: 5px 3px;
-  font-weight: bold;
+#new-board-form button {
+  margin-top: 10px;
+  padding: 5px 10px;
 }

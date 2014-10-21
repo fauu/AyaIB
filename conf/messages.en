@@ -21,4 +21,14 @@ staff.id=ID
 staff.password=Password
 staff.loginAction=Log In
 staff.staffPanel=Staff Panel
+staff.manageBoardsAction=Manage boards
+staff.addNewBoardAction=Add new board
+staff.add=Add
+staff.edit=Edit
+staff.delete=Delete
 
+staff.boardForm.name=Name
+staff.boardForm.fullName=Full name
+staff.boardForm.allowedContentTypes=Allowed file content types
+staff.boardForm.maxNumPages=Maximum number of pages
+staff.boardForm.threadsPerPage=Threads per page

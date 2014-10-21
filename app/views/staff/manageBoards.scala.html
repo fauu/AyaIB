@@ -1,0 +1,33 @@
+@(boards: List[entities.Board])
+
+@staff.main(Messages("staff.manageBoardsAction")) {
+  <table id="board-management-table">
+    <thead>
+      <tr>
+        <th class="board">Board</th>
+        <th class="actions">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for(board <- boards) {
+        <tr>
+          <td class="board">
+            <a href="@routes.BoardController.show(board.name)">
+              @("%s - %s" format (board.slashizedName, board.fullName))
+            </a>
+          </td>
+          <td class="actions">
+            <ul>
+              <li>
+                <a href=""><i class="fa fa-pencil"></i> <span class="action-name">@Messages("staff.edit")</span></a>
+              </li>
+              <li>
+                <a href=""><i class="fa fa-times"></i> <span class="action-name">@Messages("staff.delete")</span></a>
+              </li>
+            </ul>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}
