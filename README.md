@@ -1,7 +1,15 @@
 #AyaIB
 
 ##What is it?
-AyaIB is an internet imageboard web application, built with Scala, Play Framework and ReactiveMongo. The goal is to provide a viable, highly performant alternative to existing PHP Futaba Channel clones like [Tinyboard](http://tinyboard.org/).
+AyaIB is an internet imageboard web application. The goal of the project is to provide a viable, highly performant alternative to existing PHP Futaba Channel clones like [Tinyboard](http://tinyboard.org/).
+
+##Utilised technologies
+* Scala
+* Play Framework
+* MongoDB with ReactiveMongo driver
+* sbt through Typesafe Activator
+* HTML
+* LESS CSS pre-processor
 
 ##Current version
 AyaIB is currently in its early alpha stage.
