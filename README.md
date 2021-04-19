@@ -14,8 +14,8 @@ AyaIB was an imageboard web application in alpha stage, written in Scala. The pr
 
 ## Screenshots
 
-- [Board view](screenshots/board-view.png)
-- [Staff panel](screenshots/staff-panel.png)
+- [Board view](screenshots/board-view.png?raw=true)
+- [Staff panel](screenshots/staff-panel.png?raw=true)
 
 ## What was not done
 
