@@ -1,0 +1,68 @@
+@(allBoards: List[Board], board: Board, postForm: Form[PostFormData], threads: List[List[Post]], isThreadView: Boolean, numPages: Option[Int], currentPage: Option[Int])
+
+@import helper._
+
+@main("/" + board.uri + "/ - " + board.title, allBoards) {
+
+    <div id="board-header">
+        <h1>/@board.uri/ - @board.title</h1>
+        <h6>@board.subtitle</h6>
+    </div>
+
+    <form action="@if(isThreadView) {
+                    @routes.Boards.postInThread(board.uri, threads(0)(0).no.get)
+                  } else {
+                    @routes.Boards.postNewThread(board.uri)
+                  }"
+          method="POST"
+          enctype="multipart/form-data" >
+        <fieldset>
+            <label>
+                <span>Name: </span>
+                <input type="text" id="name" name="name">
+            </label>
+            <label>
+                <span>E-mail: </span>
+                <input type="text" id="email" name="email">
+            </label>
+            <label>
+                <span>Subject: </span>
+                <input type="text" id="subject" name="subject">
+            </label>
+            <label>
+                <span>Comment: </span>
+                <textarea id="comment" name="comment"></textarea>
+            </label>
+            <label>
+                <span>Image: </span>
+                <input type="file" name="image">
+            </label>
+            <button name="sumbit" type="submit">
+                @if(isThreadView) {Reply} else {Start Thread}
+            </button>
+        </fieldset>
+    </form>
+
+    <div id="board-content">
+        @for(thread <- threads) {
+            <div class="thread">
+            @views.html.thread(thread, board.uri, isThreadView)
+            </div>
+        }
+    </div>
+
+    @if(!isThreadView && numPages.get > 1) {
+        <div id="page-list">
+            @if(currentPage.get != 0) {
+                <a id="prev-page-link" href="@routes.Boards.viewBoard(board.uri, currentPage.get - 1)">Previous</a>
+            }
+            @for(page <- 0 to numPages.get - 1) {
+                <a href="@routes.Boards.viewBoard(board.uri, page)">
+                    @if(currentPage.get == page) {<span id="current-page">@page</span>} else {@page}</a>
+            }
+            @if(currentPage.get != numPages.get - 1) {
+                <a id="next-page-link" href="@routes.Boards.viewBoard(board.uri, currentPage.get + 1)">Next</a>
+            }
+        </div>
+    }
+}

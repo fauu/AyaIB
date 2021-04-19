@@ -1,0 +1,11 @@
+GET      /$boardUri<[a-z]+>                            controllers.Application.redirectToBoard(boardUri)
+GET      /$boardUri<[a-z]+>/                           controllers.Boards.viewBoard(boardUri, page: Int = 0)
+GET      /$boardUri<[a-z]+>/$page<\d+>                 controllers.Boards.viewBoard(boardUri, page: Int)
+POST     /$boardUri<[a-z]+>/                           controllers.Boards.postNewThread(boardUri)
+GET      /$boardUri<[a-z]+>/threads/$threadNo<\d+>     controllers.Boards.viewThread(boardUri, threadNo: Long)
+POST     /$boardUri<[a-z]+>/threads/$threadNo<\d+>     controllers.Boards.postInThread(boardUri, threadNo: Long)
+
+GET      /images/:filename                             controllers.Images.view(filename)
+
+GET      /assets/*file                                 controllers.Assets.at(path = "/public", file)
+

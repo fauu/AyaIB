@@ -1,0 +1,9 @@
+@(posts: List[Post], boardUri: String, isThreadView: Boolean)
+
+@for(post <- posts) {
+    @if(post.isOp) { @views.html.image(post.image.get) }
+
+    <div class="post @if(post.isOp) { op } else { reply }">
+    @views.html.post(post, boardUri, isThreadView)
+    </div>
+}

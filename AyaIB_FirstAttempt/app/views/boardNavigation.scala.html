@@ -1,0 +1,9 @@
+@(boards: List[Board])
+
+<ul>
+    @for(board <- boards) {
+        <li>
+            <a href="@routes.Boards.viewBoard(board.uri, 0)">@board.uri</a>
+        </li>
+    }
+</ul>

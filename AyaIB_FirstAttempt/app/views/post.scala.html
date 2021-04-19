@@ -1,0 +1,38 @@
+@(post: Post, boardUri: String, isThreadView: Boolean)
+
+<div class="info">
+    @post.subject match {
+        case Some(subject) => {
+            <span class="subject">
+            @subject
+            </span>
+        }
+        case None => { }
+    }
+    <span class="name">
+        @post.name match {
+            case Some(name) => {
+                <a href="mailto:@post.email.getOrElse("")">@name</a>
+            }
+            case None => { Anonymous }
+        }
+    </span>
+    <span class="date">
+    @utils.Utils.formatDate(post.date, "d.MM.yyyy (EE) H:mm:ss z")
+    </span>
+    <span class="no">
+        #@post.no
+    </span>
+</div>
+
+@if(post.isOp && !isThreadView) {
+    [<a class="reply-link" href="@routes.Boards.viewThread(boardUri, post.no.get)">Reply</a>]
+}
+
+@if(!post.isOp && post.hasImage) {
+    @image(post.image.get)
+}
+
+<blockquote class="comment">
+    @post.comment
+</blockquote>

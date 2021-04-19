@@ -1,0 +1,12 @@
+@(image: Image)
+
+<div class="image-info">
+    <a href="/images/@image.name@(".")@utils.Utils.contentTypeToExtension(image.mimeType)">
+        @image.name.get@(".")@utils.Utils.contentTypeToExtension(image.mimeType)</a>
+    (@image.size@(",") @image.width@("x")@image.height@(",") @image.originalName)
+</div>
+
+<a href="/images/@image.name@(".")@utils.Utils.contentTypeToExtension(image.mimeType)">
+    <img src="/images/@image.name@("t.")@utils.Utils.contentTypeToExtension(image.mimeType)">
+</a>
+
